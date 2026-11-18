@@ -16,3 +16,10 @@ export async function violacoesGraves(page: Page): Promise<string[]> {
   const res = await new AxeBuilder({ page } as unknown as ConstructorParameters<typeof AxeBuilder>[0]).analyze();
   return res.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id);
 }
+
+import { execSync } from 'node:child_process';
+
+/** Volta o banco aos dados de exemplo (para testes que alteram o dia). */
+export function resetarDados() {
+  execSync('npx tsx scripts/seed.ts', { stdio: 'ignore', env: { ...process.env, SEED_DIA: '2026-11-18' } });
+}

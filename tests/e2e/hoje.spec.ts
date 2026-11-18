@@ -1,7 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { entrar } from './helpers';
+import { entrar, resetarDados } from './helpers';
 
-test.beforeEach(async ({ page }) => entrar(page));
+test.beforeEach(async ({ page }) => {
+  resetarDados();
+  await entrar(page);
+});
 
 const coluna = (page: import('@playwright/test').Page, nome: string) => page.getByRole('region', { name: nome });
 

@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { entrar } from './helpers';
+import { entrar, resetarDados } from './helpers';
+
+test.beforeEach(() => resetarDados());
 
 test('agenda pelo horário livre e o atendimento aparece na agenda', async ({ page }) => {
   await entrar(page);

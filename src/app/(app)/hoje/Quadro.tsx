@@ -13,6 +13,7 @@ import { Mono, gradientFor, initials } from '@/ui/Mono';
 import { Switch } from '@/ui/Switch';
 import { useToast } from '@/ui/Toast';
 import { concluirAvisoAction, moverAction } from './actions';
+import { ReceberSheet } from '../_components/ReceberSheet';
 import s from './hoje.module.css';
 
 const COR: Record<BoardStage, string> = { chegando: 'var(--ink3)', banho: '#30A6C7', tosa: '#FF9500', pronto: '#34C759' };
@@ -148,5 +149,16 @@ function RodapePronto({ card }: { card: CardPet }) {
     );
   }
   if (card.pago) return <div className={s.meta}><Chip tone="green" icon="check">Pago</Chip></div>;
-  return <span className="cap">{`A receber: ${formatBRL(card.precoCentavos)}`}</span>;
+  return <BotaoReceber card={card} />;
+}
+
+function BotaoReceber({ card }: { card: CardPet }) {
+  const router = useRouter();
+  const [aberto, setAberto] = useState(false);
+  return (
+    <>
+      <Button variant="orange" size="sm" onClick={() => setAberto(true)}>{`Receber ${formatBRL(card.pacote ? 0 : card.precoCentavos)}`}</Button>
+      {aberto && <ReceberSheet agendamentoId={card.agendamentoId} onClose={() => setAberto(false)} onDone={() => router.refresh()} />}
+    </>
+  );
 }

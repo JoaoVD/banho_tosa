@@ -41,6 +41,9 @@ export async function getHoje(tx: Tx, dia: string, agora: Date): Promise<Hoje> {
            p.id as pet_id, p.nome as pet, p.raca, p.cuidados, t.nome as tutor,
            s.nome as servico, s.inclui_banho, s.inclui_tosa,
            exists (select 1 from agendamentos x where x.pet_id = p.id and x.etapa = 'concluido' and x.id <> a.id) as veterano,
+           (select pc.total || '|' || pc.saldo from pacotes_cliente pc
+             where pc.tutor_id = t.id and pc.servico_id = a.servico_id and (pc.porte is null or pc.porte = p.porte)
+               and pc.saldo > 0 and pc.valido_ate >= ${dia}::date order by pc.valido_ate limit 1) as pacote_info,
            (select pr.nome || '|' || extract(epoch from upper(b.periodo))::bigint
               from agendamento_blocos b join profissionais pr on pr.id = b.profissional_id
              where b.agendamento_id = a.id and pr.funcao = 'tosa' and b.ativo limit 1) as tosa_info
@@ -77,10 +80,14 @@ export async function getHoje(tx: Tx, dia: string, agora: Date): Promise<Hoje> {
       nota,
       pago: r.etapa === 'concluido',
       avisoPendente: pronto && r.etapa !== 'concluido' && !r.aviso_pronto_em,
-      pacote: null,
+      pacote: r.etapa !== 'concluido' && r.pacote_info
+        ? (([total, saldo]) => ({ usados: total - saldo + 1, total }))(String(r.pacote_info).split('|').map(Number))
+        : null,
     });
   }
   const todos = Object.values(colunas).flat();
+  const [caixa] = await tx`select coalesce(sum(total_centavos), 0)::int as total, count(*)::int as n
+    from pagamentos where loja_id = loja_atual() and dia_caixa = ${dia}::date and estornado_em is null`;
   return {
     saudacao: saudacao(agora),
     widgets: {
@@ -88,8 +95,8 @@ export async function getHoje(tx: Tx, dia: string, agora: Date): Promise<Hoje> {
       agendados: todos.length,
       paraReceber: colunas.pronto.filter((c) => !c.pago).map((c) => c.petNome),
       respostas: 0,
-      recebidoCentavos: 0,
-      pagamentos: 0,
+      recebidoCentavos: caixa.total,
+      pagamentos: caixa.n,
     },
     colunas,
     noPontoDeVoltar: (await petsNoPontoDeVoltar(tx, dia)).map((p) => ({ petId: p.petId, petNome: p.petNome })),

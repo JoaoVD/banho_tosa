@@ -1,0 +1,7 @@
+.total { text-align: center; padding: 6px 0; }
+.valor { font-family: var(--font-d); font-size: 34px; font-weight: 700; letter-spacing: -.03em; }
+.formas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.forma { min-height: 72px; border-radius: var(--r-md); border: 0; background: var(--surface); box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600; transition: box-shadow .2s, transform .25s var(--spring); }
+.forma:active { transform: scale(.97); }
+.forma[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--tint); color: var(--tint); }
+@media (max-width: 520px) { .formas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

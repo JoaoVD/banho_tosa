@@ -125,14 +125,28 @@ export type Atendimento = { id: string; dia: Date; servico: string; valorCentavo
 
 export async function historicoDoPet(tx: Tx, petId: string): Promise<Atendimento[]> {
   const rows = await tx`
-    select a.id, a.inicio, s.nome as servico, a.preco_centavos,
+    select a.id, a.inicio, s.nome as servico, coalesce(pi.valor_centavos, a.preco_centavos) as preco_centavos,
+      coalesce(pi.ajuste_motivo like 'Pacote:%', false) as pacote,
       (select pr.nome from agendamento_blocos b join profissionais pr on pr.id = b.profissional_id
         where b.agendamento_id = a.id order by lower(b.periodo) limit 1) as profissional
     from agendamentos a join servicos s on s.id = a.servico_id
+    left join pagamento_itens pi on pi.agendamento_id = a.id
     where a.pet_id = ${petId} and a.etapa = 'concluido' order by a.inicio desc limit 50`;
-  return rows.map((r) => ({ id: r.id, dia: new Date(r.inicio), servico: r.servico, valorCentavos: r.preco_centavos, pacote: false, profissional: r.profissional }));
+  return rows.map((r) => ({ id: r.id, dia: new Date(r.inicio), servico: r.servico, valorCentavos: r.preco_centavos, pacote: r.pacote, profissional: r.profissional }));
 }
 
 export async function fixarCiclo(tx: Tx, petId: string, dias: number | null) {
   await tx`update pets set ciclo_dias = ${dias}, ciclo_fixo = ${dias !== null} where id = ${petId}`;
+}
+
+export async function fidelidadeDoTutor(tx: Tx, tutorId: string, hoje: string): Promise<{ pacote: { saldo: number; total: number; validoAte: string } | null; pontos: number }> {
+  const [p] = await tx`select saldo, total, valido_ate from pacotes_cliente where tutor_id = ${tutorId} and saldo > 0 and valido_ate >= ${hoje}::date order by valido_ate limit 1`;
+  const [s] = await tx`select coalesce(sum(delta), 0)::int as s from movimentos_pontos where tutor_id = ${tutorId}`;
+  return { pacote: p ? { saldo: p.saldo, total: p.total, validoAte: new Date(p.valido_ate).toISOString().slice(0, 10) } : null, pontos: s.s };
+}
+
+/** Atendimento do pet pronto e ainda não recebido (para o atalho "Receber" da ficha). */
+export async function prontoParaReceber(tx: Tx, petId: string): Promise<string | null> {
+  const [a] = await tx`select id from agendamentos where pet_id = ${petId} and etapa = 'pronto' order by inicio desc limit 1`;
+  return a?.id ?? null;
 }

@@ -56,6 +56,32 @@ async function agendaDoDia(loja: string, petIds: Record<string, string>) {
   }
 }
 
+async function fidelidade(loja: string) {
+  const dia = process.env.SEED_DIA ?? dayKeySP(new Date());
+  const serv = Object.fromEntries((await sql`select id, nome from servicos where loja_id = ${loja}`).map((r) => [r.nome, r.id]));
+  const tutor = Object.fromEntries((await sql`select id, nome from tutores where loja_id = ${loja}`).map((r) => [r.nome, r.id]));
+  await sql`insert into premios (loja_id, nome, pontos, servico_id) values
+    (${loja}, 'Perfume e laço de brinde', 300, null), (${loja}, 'Hidratação grátis', 500, null), (${loja}, 'Banho grátis', 800, ${serv['Banho']})`;
+  await sql`insert into pacotes_modelo (loja_id, nome, preco_centavos, banhos, servico_id, porte, validade_dias) values
+    (${loja}, '4 banhos no mês', 26000, 4, ${serv['Banho']}, 'pequeno', 35),
+    (${loja}, '4 banhos + tosa higiênica', 29000, 4, ${serv['Banho + tosa higiênica']}, null, 45),
+    (${loja}, '4 banhos, porte grande', 42000, 4, ${serv['Banho']}, 'grande', 35)`;
+  const validade = new Date(Date.parse(`${dia}T12:00:00Z`) + 17 * 86_400_000).toISOString().slice(0, 10);
+  await sql`insert into pacotes_cliente (loja_id, tutor_id, nome, servico_id, total, saldo, valido_ate) values
+    (${loja}, ${tutor['Ana Souza']}, '4 banhos + tosa higiênica', ${serv['Banho + tosa higiênica']}, 4, 2, ${validade}),
+    (${loja}, ${tutor['Carla Mendes']}, '4 banhos + hidratação', ${serv['Banho + hidratação']}, 4, 2, ${validade})`;
+  for (const [nome, pts] of [['Ana Souza', 340], ['Beatriz Lima', 820], ['Juliana Rocha', 260], ['Pedro Alves', 480], ['Carla Mendes', 150]] as const) {
+    await sql`insert into movimentos_pontos (loja_id, tutor_id, delta, motivo) values (${loja}, ${tutor[nome]}, ${pts}, 'Saldo inicial')`;
+  }
+  // Mel já foi paga (como no protótipo).
+  const [mel] = await sql`select a.id, a.preco_centavos, p.tutor_id from agendamentos a join pets p on p.id = a.pet_id where p.nome = 'Mel' and a.loja_id = ${loja}`;
+  const [pg] = await sql`insert into pagamentos (loja_id, tutor_id, forma, total_centavos, pontos_ganhos, dia_caixa, recebido_em, idempotency_key)
+    values (${loja}, ${mel.tutor_id}, 'pix', ${mel.preco_centavos}, ${Math.floor(mel.preco_centavos / 100)}, ${dia}, ${atSP(dia, '10:40')}, gen_random_uuid()) returning id`;
+  await sql`insert into pagamento_itens (loja_id, pagamento_id, agendamento_id, descricao, valor_centavos) values (${loja}, ${pg.id}, ${mel.id}, 'Mel, Banho + escovação', ${mel.preco_centavos})`;
+  await sql`insert into movimentos_pontos (loja_id, tutor_id, delta, motivo, pagamento_id) values (${loja}, ${mel.tutor_id}, ${Math.floor(mel.preco_centavos / 100)}, 'Atendimento', ${pg.id})`;
+  await sql`update agendamentos set etapa = 'concluido' where id = ${mel.id}`;
+}
+
 export async function seed() {
   await sql`truncate lojas cascade`;
   await sql`delete from auth.users`;
@@ -85,6 +111,7 @@ export async function seed() {
     petIds[p.pet] = id;
   }
   await agendaDoDia(loja, petIds);
+  await fidelidade(loja);
   return { loja, dona, rec };
 }
 

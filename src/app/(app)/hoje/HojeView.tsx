@@ -42,7 +42,9 @@ export function HojeView({ dataLonga, titulo, dia, hoje, pets, servicos }: { dat
         </div>
         <Widget title="Para receber" tile={<Tile icon="wallet" color="orange" />} value={w.paraReceber.length} sub={w.paraReceber.length ? `${w.paraReceber.join(' e ')} ${w.paraReceber.length > 1 ? 'já estão prontos' : 'já está pronto'}` : 'Tudo recebido até agora'} />
         <Widget href="/mensagens" title="Respostas no WhatsApp" tile={<Tile icon="msg" color="green" />} value={w.respostas} sub="Tutores aceitando horários" />
-        <Widget href="/caixa" title="Recebido hoje" tile={<Tile icon="cash" color="blue" />} value={formatBRL(w.recebidoCentavos).replace(',00', '')} sub={`${w.pagamentos} ${w.pagamentos === 1 ? 'pagamento' : 'pagamentos'}`} />
+        <div data-testid="widget-recebido" style={{ display: 'contents' }}>
+          <Widget href="/caixa" title="Recebido hoje" tile={<Tile icon="cash" color="blue" />} value={formatBRL(w.recebidoCentavos).replace(',00', '')} sub={`${w.pagamentos} ${w.pagamentos === 1 ? 'pagamento' : 'pagamentos'}`} />
+        </div>
       </div>
       <Quadro colunas={hoje.colunas} />
       {hoje.noPontoDeVoltar.length > 0 && (

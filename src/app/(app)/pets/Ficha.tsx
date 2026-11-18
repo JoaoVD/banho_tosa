@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Atendimento, PetFicha } from '@/db/repos/pets';
 import { formatBRL } from '@/domain/money';
 import { Aneis, type CicloView, type PacoteView } from './Aneis';
+import { ReceberAtalho } from './ReceberAtalho';
 import { formatPhoneBR } from '@/domain/phone';
 import { PORTE_LABEL } from '@/domain/types';
 import { EmptyState, GroupList } from '@/ui/bits';
@@ -12,7 +13,7 @@ import { FotoPet } from './FotoPet';
 import { LembretesSwitch } from './LembretesSwitch';
 import s from './pets.module.css';
 
-export function Ficha({ ficha, ciclo, historico, pacote = null, pontos = 0 }: { ficha: PetFicha; ciclo: CicloView; historico: Atendimento[]; pacote?: PacoteView; pontos?: number }) {
+export function Ficha({ ficha, ciclo, historico, pacote = null, pontos = 0, receberId = null }: { ficha: PetFicha; ciclo: CicloView; historico: Atendimento[]; pacote?: PacoteView; pontos?: number; receberId?: string | null }) {
   const descricao = [ficha.raca ?? (ficha.especie === 'gato' ? 'Gato' : 'Cão'), `porte ${PORTE_LABEL[ficha.porte].toLowerCase()}`].join(', ');
   return (
     <>
@@ -24,6 +25,7 @@ export function Ficha({ ficha, ciclo, historico, pacote = null, pontos = 0 }: { 
         <div className={s.quick}>
           <Link className={s.qbtn} href="/mensagens"><Icon name="msg" size="lg" />Mensagem</Link>
           <Link className={s.qbtn} href={`/agenda?novo=1&pet=${ficha.id}`}><Icon name="cal" size="lg" />Agendar</Link>
+          {receberId && <ReceberAtalho agendamentoId={receberId} />}
         </div>
       </div>
       <Aneis petId={ficha.id} ciclo={ciclo} pacote={pacote} pontos={pontos} />
