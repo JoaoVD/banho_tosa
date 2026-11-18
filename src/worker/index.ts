@@ -5,10 +5,11 @@ import { getProvider } from '@/whatsapp/provider';
 import { realClock } from './clock';
 import { runDaily } from './daily';
 import { drainOnce } from './send-queue';
+import { WORKER_SQL_OPTIONS } from './options';
 
 const url = process.env.SUPABASE_SERVICE_DATABASE_URL ?? process.env.DATABASE_URL;
 if (!url) throw new Error('SUPABASE_SERVICE_DATABASE_URL não configurado');
-const sql = postgres(url, { max: 4, onnotice: () => {} });
+const sql = postgres(url, WORKER_SQL_OPTIONS);
 const PAUSA_MS = 30_000;
 
 async function ciclo() {

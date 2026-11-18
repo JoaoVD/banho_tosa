@@ -12,6 +12,7 @@ export type EnqueueInput = {
   prioridade: 'imediata' | 'lote';
   agendarPara?: Date;
   dedupeKey?: string;
+  propostaId?: string;
 };
 export type EnqueueResult = { filaId: string; mensagemId: string } | { ignorado: 'optout' | 'sem_telefone' | 'duplicado' };
 
@@ -41,8 +42,8 @@ export async function enqueueMessage(tx: Tx, lojaId: string, input: EnqueueInput
     on conflict (loja_id, telefone_e164) do update set ultima_em = now(), tutor_id = coalesce(conversas.tutor_id, excluded.tutor_id) returning id`;
   const [msg] = await tx`insert into mensagens (loja_id, conversa_id, direcao, origem, tipo, automatica, texto, status)
     values (${lojaId}, ${conversa.id}, 'out', 'sistema', ${input.tipo}, ${input.tipo !== 'manual'}, ${texto}, 'fila') returning id`;
-  const [fila] = await tx`insert into fila_envio (loja_id, telefone_e164, tutor_id, texto, tipo, prioridade, agendar_para, mensagem_id, dedupe_key)
-    values (${lojaId}, ${telefone}, ${input.tutorId ?? null}, ${texto}, ${input.tipo}, ${input.prioridade}, ${input.agendarPara ?? new Date()}, ${msg.id}, ${input.dedupeKey ?? null})
+  const [fila] = await tx`insert into fila_envio (loja_id, telefone_e164, tutor_id, texto, tipo, prioridade, agendar_para, mensagem_id, dedupe_key, proposta_id)
+    values (${lojaId}, ${telefone}, ${input.tutorId ?? null}, ${texto}, ${input.tipo}, ${input.prioridade}, ${input.agendarPara ?? new Date()}, ${msg.id}, ${input.dedupeKey ?? null}, ${input.propostaId ?? null})
     returning id`;
   return { filaId: fila.id, mensagemId: msg.id };
 }

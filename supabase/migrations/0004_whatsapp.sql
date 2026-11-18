@@ -38,6 +38,7 @@ create table fila_envio (
   status text not null default 'pendente' check (status in ('pendente', 'enviando', 'enviada', 'falhou', 'cancelada')),
   mensagem_id uuid references mensagens(id) on delete set null,
   dedupe_key text unique,
+  proposta_id uuid,
   enviada_em timestamptz,
   erro text,
   criada_em timestamptz not null default now()

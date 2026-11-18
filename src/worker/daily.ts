@@ -24,11 +24,12 @@ export async function comoLoja<T>(sql: postgres.Sql, lojaId: string, fn: (tx: Tx
 /** Lembretes de retorno e de véspera do dia. Idempotente: cada tipo roda uma vez por loja e dia. */
 export async function runDaily({ sql, clock, lojaId }: DailyDeps, dia: string): Promise<{ lembretes: number; vesperas: number }> {
   const agora = clock.now();
-  const [ok] = await sql`insert into execucoes_diarias (loja_id, dia, tipo) values (${lojaId}, ${dia}, 'lembretes')
-    on conflict do nothing returning 1`;
-  if (!ok) return { lembretes: 0, vesperas: 0 };
-
   return comoLoja(sql, lojaId, async (tx) => {
+    // A marca fica na mesma transação: se algo falhar, o dia não é dado como feito.
+    const [ok] = await tx`insert into execucoes_diarias (loja_id, dia, tipo) values (${lojaId}, ${dia}, 'lembretes')
+      on conflict do nothing returning 1`;
+    if (!ok) return { lembretes: 0, vesperas: 0 };
+
     // Retorno ---------------------------------------------------------
     const pets = await petsNoPontoDeVoltar(tx, dia);
     const histRows = await tx`select tutor_id, enviado_em, respondido from lembretes_enviados where loja_id = ${lojaId}`;
@@ -36,6 +37,9 @@ export async function runDaily({ sql, clock, lojaId }: DailyDeps, dia: string): 
     for (const h of histRows) hist.set(h.tutor_id, [...(hist.get(h.tutor_id) ?? []), { enviadoEm: new Date(h.enviado_em), respondido: h.respondido }]);
     const pulados = await tx`select tutor_id from lembretes_pulados where loja_id = ${lojaId} and dia = ${dia}::date`;
     const removidos = new Set<string>(pulados.map((r) => r.tutor_id));
+    // Quem ainda tem lembrete esperando na fila (ex.: segurado pelo teto diário) não recebe outro.
+    for (const r of await tx`select tutor_id from fila_envio where loja_id = ${lojaId} and tipo = 'lembrete_retorno'
+      and status in ('pendente', 'enviando') and tutor_id is not null`) removidos.add(r.tutor_id);
     const candidatos = selectReminderCandidates(
       pets.map((p) => ({ petId: p.petId, tutorId: p.tutorId, lembretesAtivos: p.lembretesAtivos, status: p.ciclo })),
       hist,
@@ -62,9 +66,9 @@ export async function runDaily({ sql, clock, lojaId }: DailyDeps, dia: string): 
       const inicio = escolhidos[i];
       if (!inicio) continue;
       const [pet] = await tx`select nome from pets where id = ${c.petId}`;
-      await tx`insert into propostas_horario (loja_id, tutor_id, pet_id, servico_id, inicio) values (${lojaId}, ${c.tutorId}, ${c.petId}, ${servicos[i]}, ${inicio})`;
+      const [prop] = await tx`insert into propostas_horario (loja_id, tutor_id, pet_id, servico_id, inicio) values (${lojaId}, ${c.tutorId}, ${c.petId}, ${servicos[i]}, ${inicio}) returning id`;
       const r = await enqueueMessage(tx, lojaId, {
-        tutorId: c.tutorId, tipo: 'lembrete_retorno', prioridade: 'lote', dedupeKey: `lembrete:${c.tutorId}:${dia}`,
+        tutorId: c.tutorId, tipo: 'lembrete_retorno', prioridade: 'lote', dedupeKey: `lembrete:${c.tutorId}:${dia}`, propostaId: prop.id,
         vars: { pet: pet.nome, dia: diaCurtoSP(inicio), hora: hhmmSP(inicio) },
       });
       if ('filaId' in r) lembretes++;

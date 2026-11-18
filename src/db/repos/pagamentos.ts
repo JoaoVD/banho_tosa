@@ -101,7 +101,15 @@ export async function receber(tx: Tx, lojaId: string, userId: string, input: Rec
   if (ja) return ja;
   for (const aj of input.ajustes ?? []) if (!aj.motivo?.trim()) throw new AjusteSemMotivo();
 
-  // Reserva a chave primeiro: uma segunda chamada concorrente espera aqui e depois devolve este pagamento.
+  // Um recebimento por tutor de cada vez (antes de qualquer insert, para não haver deadlock):
+  // pacote e pontos não podem ser usados duas vezes em paralelo.
+  const [dono] = await tx`select t.id from agendamentos a join pets p on p.id = a.pet_id join tutores t on t.id = p.tutor_id
+    where a.id = ${input.agendamentoIds[0] ?? null} for update of t`;
+  if (!dono) throw new Error('Atendimento não encontrado');
+  const ja2 = await existente(tx, input.idempotencyKey);
+  if (ja2) return ja2;
+
+  // Reserva a chave: uma segunda chamada concorrente espera aqui e depois devolve este pagamento.
   const [reserva] = await tx`insert into pagamentos (loja_id, tutor_id, forma, total_centavos, dia_caixa, usuario_id, idempotency_key)
     select ${lojaId}, p.tutor_id, 'pix', 0, ${input.diaCaixa}, ${userId}, ${input.idempotencyKey}
     from agendamentos a join pets p on p.id = a.pet_id where a.id = ${input.agendamentoIds[0]}
@@ -125,8 +133,8 @@ export async function receber(tx: Tx, lojaId: string, userId: string, input: Rec
   let usouPacote = false;
   if (input.usarPacote) {
     const achou = pacoteParaItens(await pacotesDoTutor(tx, tutorId), its, input.diaCaixa);
-    if (achou) {
-      await tx`update pacotes_cliente set saldo = saldo - 1 where id = ${achou.pacote.id} and saldo > 0`;
+    const baixou = achou ? await tx`update pacotes_cliente set saldo = saldo - 1 where id = ${achou.pacote.id} and saldo > 0 returning id` : [];
+    if (achou && baixou.length) {
       await tx`insert into movimentos_pacote (loja_id, pacote_cliente_id, delta, agendamento_id, pagamento_id)
         values (${lojaId}, ${achou.pacote.id}, -1, ${achou.item.agendamentoId}, ${pagamentoId})`;
       valores.set(achou.item.agendamentoId, 0);

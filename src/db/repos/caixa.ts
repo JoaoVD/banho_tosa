@@ -77,8 +77,10 @@ export async function reabrirCaixa(tx: Tx, dia: string) {
 
 /** Desfaz um recebimento: sai do caixa, devolve pontos, banho de pacote e prêmio; o atendimento volta a "pronto". */
 export async function estornar(tx: Tx, pagamentoId: string, motivo: string) {
-  const [p] = await tx`select loja_id, tutor_id, pontos_ganhos, pontos_usados, estornado_em from pagamentos where id = ${pagamentoId} for update`;
+  const [p] = await tx`select loja_id, tutor_id, pontos_ganhos, pontos_usados, estornado_em, dia_caixa from pagamentos where id = ${pagamentoId} for update`;
   if (!p || p.estornado_em) return;
+  const [fechado] = await tx`select 1 from caixa_dias where loja_id = ${p.loja_id} and dia = ${p.dia_caixa} and fechado_em is not null`;
+  if (fechado) throw new Error('O caixa desse dia está fechado. A dona precisa reabrir antes de estornar.');
   await tx`update pagamentos set estornado_em = now(), estorno_motivo = ${motivo.trim() || 'Sem motivo'} where id = ${pagamentoId}`;
   const ajuste = -p.pontos_ganhos + p.pontos_usados;
   if (ajuste) await tx`insert into movimentos_pontos (loja_id, tutor_id, delta, motivo, pagamento_id) values (${p.loja_id}, ${p.tutor_id}, ${ajuste}, 'Estorno', ${pagamentoId})`;
