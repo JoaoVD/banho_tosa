@@ -6,6 +6,7 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   reporter: 'list',
+  globalSetup: './tests/e2e/global-setup.ts',
   use: { baseURL: 'http://localhost:3000', trace: 'off', locale: 'pt-BR', timezoneId: 'America/Sao_Paulo' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } }],
   webServer: {
