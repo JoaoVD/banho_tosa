@@ -41,3 +41,22 @@ export async function seedLoja(nome = 'Loja Teste'): Promise<LojaSeed> {
   await sql`insert into configuracoes (loja_id) values (${lojaId})`;
   return { lojaId, donaId, recepcaoId };
 }
+
+/** Cria profissionais, um serviço e um pet de exemplo na loja (via serviço). */
+export async function seedOperacao(lojaId: string) {
+  const [julia] = await sql`insert into profissionais (loja_id, nome, funcao) values (${lojaId}, 'Júlia', 'banho') returning id`;
+  const [marcos] = await sql`insert into profissionais (loja_id, nome, funcao) values (${lojaId}, 'Marcos', 'tosa') returning id`;
+  const [banho] = await sql`insert into servicos (loja_id, nome, inclui_banho, inclui_tosa, ciclo_padrao_dias) values (${lojaId}, 'Banho', true, false, 15) returning id`;
+  const [banhoTosa] = await sql`insert into servicos (loja_id, nome, inclui_banho, inclui_tosa, ciclo_padrao_dias) values (${lojaId}, 'Banho + tosa higiênica', true, true, 15) returning id`;
+  for (const s of [banho.id, banhoTosa.id]) {
+    for (const porte of ['mini', 'pequeno', 'medio', 'grande', 'gigante']) {
+      await sql`insert into precos_servico (servico_id, loja_id, porte, preco_centavos, duracao_min) values (${s}, ${lojaId}, ${porte}, 7000, 60)`;
+    }
+  }
+  for (const d of [0, 1, 2, 3, 4, 5, 6]) {
+    await sql`insert into horarios_funcionamento (loja_id, dia_semana, abre, fecha) values (${lojaId}, ${d}, '08:00', '18:00')`;
+  }
+  const [tutor] = await sql`insert into tutores (loja_id, nome, telefone_e164) values (${lojaId}, 'Ana Souza', '+5511987654321') returning id`;
+  const [pet] = await sql`insert into pets (loja_id, tutor_id, nome, raca, porte) values (${lojaId}, ${tutor.id}, 'Thor', 'Shih-tzu', 'pequeno') returning id`;
+  return { juliaId: julia.id as string, marcosId: marcos.id as string, banhoId: banho.id as string, banhoTosaId: banhoTosa.id as string, tutorId: tutor.id as string, petId: pet.id as string };
+}
