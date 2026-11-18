@@ -62,3 +62,12 @@ export async function estenderAction(pacoteClienteId: string, novaData: string) 
   await withSession(user, (tx) => estenderValidade(tx, pacoteClienteId, novaData));
   revalidatePath('/pacotes');
 }
+
+export async function avisarRenovacaoAction(pacoteClienteId: string): Promise<{ ok: boolean; msg: string }> {
+  const user = await getUser();
+  const { avisarRenovacao } = await import('@/db/repos/pacotes');
+  const r = await withSession(user, (tx) => avisarRenovacao(tx, user.lojaId, pacoteClienteId));
+  revalidatePath('/pacotes');
+  if ('filaId' in r) return { ok: true, msg: 'Aviso de renovação na fila do WhatsApp' };
+  return { ok: false, msg: r.ignorado === 'optout' ? 'Esse tutor desligou as mensagens automáticas.' : r.ignorado === 'duplicado' ? 'Esse aviso já foi enviado.' : 'Tutor sem WhatsApp cadastrado.' };
+}

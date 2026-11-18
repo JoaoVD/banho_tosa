@@ -2,6 +2,8 @@ import { businessDayFor, drawerDiff, summarizeDay } from '@/domain/cash';
 import { addDaysKey, dayKeySP, hhmmSP } from '@/domain/time';
 import type { FormaPagamento } from '@/domain/types';
 import type { Tx } from '../session';
+import { enqueueMessage } from '@/whatsapp/enqueue';
+import { formatBRL } from '@/domain/money';
 
 export type LinhaCaixa = { id: string; hora: string; titulo: string; detalhe: string; forma: FormaPagamento; valorCentavos: number; estornado: boolean; estornoMotivo: string | null };
 export type CaixaDia = {
@@ -55,6 +57,15 @@ export async function fecharCaixa(tx: Tx, lojaId: string, userId: string, input:
     values (${lojaId}, ${input.dia}::date, ${em}, ${userId}, ${input.contadoCentavos}, ${c.resumo.porForma.dinheiro}, ${diferenca})
     on conflict (loja_id, dia) do update set fechado_em = excluded.fechado_em, fechado_por = excluded.fechado_por,
       contado_centavos = excluded.contado_centavos, esperado_centavos = excluded.esperado_centavos, diferenca_centavos = excluded.diferenca_centavos`;
+  const [loja] = await tx`select telefone_dona from lojas where id = ${lojaId}`;
+  if (loja?.telefone_dona) {
+    const gaveta = diferenca === 0 ? 'confere' : diferenca > 0 ? `sobram ${formatBRL(diferenca)}` : `faltam ${formatBRL(-diferenca)}`;
+    const f = (n: number) => formatBRL(n).replace(/\u00a0/g, ' ');
+    await enqueueMessage(tx, lojaId, {
+      telefoneE164: loja.telefone_dona, tipo: 'resumo_caixa', prioridade: 'imediata', dedupeKey: `caixa:${lojaId}:${input.dia}:${em.getTime()}`,
+      vars: { dia: `${input.dia.slice(8)}/${input.dia.slice(5, 7)}`, total: f(c.resumo.totalCentavos), pix: f(c.resumo.porForma.pix), credito: f(c.resumo.porForma.credito), debito: f(c.resumo.porForma.debito), dinheiro: f(c.resumo.porForma.dinheiro), gaveta },
+    });
+  }
   return { totalCentavos: c.resumo.totalCentavos, porForma: c.resumo.porForma, esperadoCentavos: c.resumo.porForma.dinheiro, diferencaCentavos: diferenca };
 }
 

@@ -2,6 +2,7 @@ import { pointsEarned } from '@/domain/points';
 import { addDaysKey } from '@/domain/time';
 import type { FormaPagamento, Porte } from '@/domain/types';
 import type { Tx } from '../session';
+import { enqueueMessage, type EnqueueResult } from '@/whatsapp/enqueue';
 
 export type ModeloInput = { id?: string; nome: string; precoCentavos: number; banhos: number; servicoId: string; porte: Porte | null; validadeDias: number; ativo?: boolean };
 export type Modelo = Required<Omit<ModeloInput, 'id'>> & { id: string; servicoNome: string; ativos: number };
@@ -69,4 +70,16 @@ export async function listAcabando(tx: Tx, hoje: string): Promise<Acabando[]> {
 
 export async function estenderValidade(tx: Tx, pacoteClienteId: string, novaData: string) {
   await tx`update pacotes_cliente set valido_ate = ${novaData}::date where id = ${pacoteClienteId}`;
+}
+
+/** Avisa o tutor que o pacote está no último banho (uma vez por pacote). */
+export async function avisarRenovacao(tx: Tx, lojaId: string, pacoteClienteId: string): Promise<EnqueueResult> {
+  const [pc] = await tx`select pc.nome, pc.tutor_id, (select string_agg(p.nome, ' e ' order by p.nome) from pets p where p.tutor_id = pc.tutor_id) as pets
+    from pacotes_cliente pc where pc.id = ${pacoteClienteId}`;
+  const r = await enqueueMessage(tx, lojaId, {
+    tutorId: pc.tutor_id, tipo: 'pacote_acabando', prioridade: 'imediata', dedupeKey: `pacote:${pacoteClienteId}`,
+    vars: { pet: pc.pets ?? '', pacote: pc.nome },
+  });
+  if ('filaId' in r) await tx`update pacotes_cliente set aviso_renovacao_em = now() where id = ${pacoteClienteId}`;
+  return r;
 }

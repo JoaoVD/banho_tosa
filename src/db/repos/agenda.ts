@@ -3,6 +3,8 @@ import { freeGaps } from '@/domain/slots';
 import { addDaysKey, atSP, dayKeySP } from '@/domain/time';
 import type { Etapa, Porte } from '@/domain/types';
 import type { Tx } from '../session';
+import { enqueueMessage } from '@/whatsapp/enqueue';
+import { diaCurtoSP, hhmmSP } from '@/domain/time';
 
 export type ProfissionalAgenda = { id: string; nome: string; funcao: 'banho' | 'tosa' };
 export type BlocoAgenda = {
@@ -129,6 +131,13 @@ export async function criarAgendamento(
       return a.id as string;
     });
     const nome = profs.find((p) => p.id === blocos[0].profissionalId)?.nome ?? '';
+    if (input.confirmarWhatsApp) {
+      const [p] = await tx`select nome, tutor_id from pets where id = ${input.petId}`;
+      await enqueueMessage(tx, lojaId, {
+        tutorId: p.tutor_id, tipo: 'confirmacao', prioridade: 'imediata', dedupeKey: `confirmacao:${id}`,
+        vars: { pet: p.nome, dia: diaCurtoSP(input.inicio), hora: hhmmSP(input.inicio), servico: s.nome },
+      });
+    }
     return { id, inicio: input.inicio, profissionalNome: nome };
   } catch (e) {
     if (ehConflito(e)) return ocupado();

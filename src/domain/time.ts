@@ -52,3 +52,12 @@ export function hhmmSP(d: Date): string {
   const p = localParts(d);
   return `${String(p.h).padStart(2, '0')}:${String(p.mi).padStart(2, '0')}`;
 }
+
+const SEMANA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+
+/** "sexta, 20/11" no fuso de São Paulo. */
+export function diaCurtoSP(d: Date): string {
+  const k = dayKeySP(d);
+  const dow = new Date(`${k}T12:00:00Z`).getUTCDay();
+  return `${SEMANA[dow]}, ${k.slice(8)}/${k.slice(5, 7)}`;
+}

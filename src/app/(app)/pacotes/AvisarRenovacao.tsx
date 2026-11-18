@@ -1,12 +1,21 @@
 'use client';
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 import { Chip } from '@/ui/bits';
+import { Button } from '@/ui/Button';
+import { useToast } from '@/ui/Toast';
+import { avisarRenovacaoAction } from './actions';
 
-/** O envio pelo WhatsApp entra com a fila de mensagens (Tarefa 20). */
-export function AvisarRenovacao({ avisado }: { pacoteClienteId: string; avisado: boolean }) {
+export function AvisarRenovacao({ pacoteClienteId, avisado }: { pacoteClienteId: string; avisado: boolean }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [pending, start] = useTransition();
   if (avisado) return <Chip tone="green" icon="check">Avisado</Chip>;
   return (
-    <button type="button" className="btn tinted sm" disabled title="Disponível quando o WhatsApp estiver conectado">
-      Avisar no WhatsApp
-    </button>
+    <Button variant="tinted" size="sm" busy={pending} busyLabel="Enviando" onClick={() => start(async () => {
+      const r = await avisarRenovacaoAction(pacoteClienteId);
+      toast(r.msg);
+      router.refresh();
+    })}>Avisar no WhatsApp</Button>
   );
 }

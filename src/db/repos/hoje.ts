@@ -3,6 +3,7 @@ import { addDaysKey, atSP, hhmmSP } from '@/domain/time';
 import type { Etapa } from '@/domain/types';
 import type { Tx } from '../session';
 import { petsNoPontoDeVoltar } from './pets';
+import { enqueueMessage } from '@/whatsapp/enqueue';
 
 export type CardPet = {
   agendamentoId: string;
@@ -120,4 +121,7 @@ export async function moverEtapa(tx: Tx, agendamentoId: string, para: BoardStage
 /** Registra a decisão de avisar (ou não) o tutor de que o pet está pronto. */
 export async function concluirAviso(tx: Tx, agendamentoId: string, enviar: boolean, em: Date = new Date()): Promise<void> {
   await tx`update agendamentos set aviso_pronto_em = ${em}, aviso_pronto_enviado = ${enviar} where id = ${agendamentoId}`;
+  if (!enviar) return;
+  const [a] = await tx`select a.loja_id, p.nome, p.tutor_id from agendamentos a join pets p on p.id = a.pet_id where a.id = ${agendamentoId}`;
+  await enqueueMessage(tx, a.loja_id, { tutorId: a.tutor_id, tipo: 'pronto', prioridade: 'imediata', vars: { pet: a.nome }, dedupeKey: `pronto:${agendamentoId}:${em.getTime()}` });
 }
