@@ -14,6 +14,9 @@ const LOJA: Item[] = [
 const AUTO: Item[] = [
   { href: '/configuracoes/envio', label: 'Lembretes, envio e caixa', sub: 'Horário dos lembretes, limites e fundo de troco', icon: 'bell', color: 'red' },
 ];
+const DADOS: Item[] = [
+  { href: '/configuracoes/importar', label: 'Importar planilha', sub: 'Tutores, pets e última visita', icon: 'upload', color: 'green' },
+];
 const CONTA: Item[] = [
   { href: '/configuracoes/usuarios', label: 'Usuários', sub: 'Quem acessa o sistema', icon: 'gear', color: 'gray' },
 ];
@@ -39,6 +42,7 @@ export default async function Page() {
       <PageHead title="Configurações" />
       <Lista label="Loja" items={LOJA} />
       <Lista label="Automação" items={AUTO} />
+      <Lista label="Dados" items={DADOS} />
       <Lista label="Acesso" items={CONTA} />
     </div>
   );

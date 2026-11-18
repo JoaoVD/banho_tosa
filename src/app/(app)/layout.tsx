@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { getUser } from '@/auth/current';
 import { withSession } from '@/db/session';
 import { sairAction } from '@/app/entrar/actions';
@@ -9,7 +10,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser();
-  const [loja] = await withSession(user, (tx) => tx<{ nome: string }[]>`select nome from lojas where id = ${user.lojaId}`);
+  const [loja] = await withSession(user, (tx) => tx<{ nome: string; onboarding: boolean; tutores: number }[]>`
+    select nome, onboarding_concluido as onboarding, (select count(*)::int from tutores where loja_id = ${user.lojaId}) as tutores
+    from lojas where id = ${user.lojaId}`);
+  // Primeiro acesso da dona: escolher entre importar planilha e começar do zero.
+  if (user.papel === 'dona' && loja && !loja.onboarding && loja.tutores === 0) redirect('/boas-vindas');
   return (
     <ToastProvider>
       <div className="app">

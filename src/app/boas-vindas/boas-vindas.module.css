@@ -1,0 +1,10 @@
+.page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px max(16px, env(safe-area-inset-right, 0px)) 32px max(16px, env(safe-area-inset-left, 0px)); background: radial-gradient(900px 500px at 50% -10%, rgba(0,135,124,.08), transparent 60%), var(--bg); }
+.wrap { width: min(760px, 100%); display: flex; flex-direction: column; align-items: center; text-align: center; }
+.title { margin: 18px 0 4px; font-size: 34px; font-weight: 700; letter-spacing: -.028em; }
+.sub { margin: 0 0 28px; color: var(--ink2); font-size: 17px; }
+.cards { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.cardForm { display: contents; }
+.card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; text-align: left; padding: 22px; border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow); border: 0; color: inherit; text-decoration: none; font: inherit; cursor: pointer; transition: transform .3s var(--spring), box-shadow .3s; }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hi); }
+.card b { font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
+.card span:last-child { color: var(--ink2); font-size: 15px; }
