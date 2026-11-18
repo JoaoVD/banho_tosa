@@ -19,3 +19,10 @@ test('fixo continua fixo', () => {
 test.each(['123', '', 'abc', '(11) 1234'])('inválido: %j', (raw) => {
   expect(normalizePhone(raw)).toBeNull();
 });
+
+import { formatPhoneBR } from './phone';
+
+test('formatPhoneBR mostra no formato brasileiro', () => {
+  expect(formatPhoneBR('+5511987654321')).toBe('(11) 98765-4321');
+  expect(formatPhoneBR('+551134567890')).toBe('(11) 3456-7890');
+});

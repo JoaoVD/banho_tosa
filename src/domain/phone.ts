@@ -15,3 +15,10 @@ export function normalizePhone(raw: string): string | null {
   const parsed = parsePhoneNumberFromString(`+55${ddd}${numero}`);
   return parsed && parsed.isValid() ? parsed.number : null;
 }
+
+/** "+5511987654321" -> "(11) 98765-4321". */
+export function formatPhoneBR(e164: string): string {
+  const d = e164.replace(/\D/g, '').replace(/^55/, '');
+  const ddd = d.slice(0, 2), n = d.slice(2);
+  return n.length === 9 ? `(${ddd}) ${n.slice(0, 5)}-${n.slice(5)}` : `(${ddd}) ${n.slice(0, 4)}-${n.slice(4)}`;
+}
