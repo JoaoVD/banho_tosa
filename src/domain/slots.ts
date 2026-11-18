@@ -25,3 +25,19 @@ export function pickDistinctSlots(candidates: Date[][], n: number): (Date | null
     return escolhido;
   });
 }
+
+/** Intervalos livres dentro do expediente, sem os ocupados; descarta sobras menores que minimoMin. */
+export function freeGaps(input: { dia: string; abre: string; fecha: string; ocupados: Intervalo[]; minimoMin?: number }): Intervalo[] {
+  const minimo = (input.minimoMin ?? 30) * 60_000;
+  const fecha = atSP(input.dia, input.fecha).getTime();
+  let cursor = atSP(input.dia, input.abre).getTime();
+  const gaps: Intervalo[] = [];
+  const ordenados = [...input.ocupados].sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
+  for (const o of ordenados) {
+    const ini = o.inicio.getTime();
+    if (ini - cursor >= minimo) gaps.push({ inicio: new Date(cursor), fim: new Date(Math.min(ini, fecha)) });
+    cursor = Math.max(cursor, o.fim.getTime());
+  }
+  if (fecha - cursor >= minimo) gaps.push({ inicio: new Date(cursor), fim: new Date(fecha) });
+  return gaps;
+}

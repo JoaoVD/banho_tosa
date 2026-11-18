@@ -24,3 +24,16 @@ test('cada pedido recebe um horário diferente', () => {
   const a = atSP('2026-11-20', '10:00'), b = atSP('2026-11-20', '11:00');
   expect(pickDistinctSlots([[a, b], [a, b], [a]], 3)).toEqual([a, b, null]);
 });
+
+import { freeGaps } from './slots';
+
+test('lacunas livres entre atendimentos (ignora sobras menores que 30 min)', () => {
+  const g = freeGaps({
+    dia: '2026-11-18', abre: '08:00', fecha: '18:00', minimoMin: 30,
+    ocupados: [
+      { inicio: atSP('2026-11-18', '08:00'), fim: atSP('2026-11-18', '12:00') },
+      { inicio: atSP('2026-11-18', '12:15'), fim: atSP('2026-11-18', '13:30') },
+    ],
+  });
+  expect(g.map((x) => [hhmmSP(x.inicio), hhmmSP(x.fim)])).toEqual([['13:30', '18:00']]);
+});

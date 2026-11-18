@@ -12,8 +12,9 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000/entrar',
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120000,
-    env: { AUTH_MODE: 'dev', WHATSAPP_PROVIDER: 'fake' },
+    // Hora fixa do servidor nos e2e: quarta, 18/11/2026, 10:40 em São Paulo.
+    env: { AUTH_MODE: 'dev', WHATSAPP_PROVIDER: 'fake', APP_NOW: '2026-11-18T13:40:00Z' },
   },
 });

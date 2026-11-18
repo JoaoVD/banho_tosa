@@ -1,6 +1,7 @@
 /* Dados de exemplo (os do protótipo). Apaga tudo antes. Só para desenvolvimento. */
 import postgres from 'postgres';
 import { PORTES, type Porte } from '../src/domain/types';
+import { atSP, dayKeySP } from '../src/domain/time';
 
 const url = process.env.DATABASE_URL ?? 'postgres://postgres@localhost:54329/postgres';
 if (process.env.NODE_ENV === 'production') throw new Error('seed não roda em produção');
@@ -26,6 +27,34 @@ const PETS = [
   { tutor: 'Pedro Alves', tel: '+5511987650005', pet: 'Mel', raca: 'Golden retriever', porte: 'grande', cuidados: ['Solta muito pelo, escovar antes'] },
 ];
 
+// O dia de exemplo (SEED_DIA, padrão: hoje em São Paulo), igual ao protótipo.
+const AGENDA: { pet: string; servico: string; etapa: string; blocos: [string, string, string][] }[] = [
+  { pet: 'Mel', servico: 'Banho + escovação', etapa: 'pronto', blocos: [['Júlia', '08:00', '09:00']] },
+  { pet: 'Luna', servico: 'Banho', etapa: 'pronto', blocos: [['Júlia', '09:00', '10:00']] },
+  { pet: 'Pipoca', servico: 'Tosa na tesoura', etapa: 'tosa', blocos: [['Marcos', '09:30', '10:55']] },
+  { pet: 'Thor', servico: 'Banho + tosa higiênica', etapa: 'banho', blocos: [['Júlia', '10:00', '10:55'], ['Marcos', '10:55', '11:30']] },
+  { pet: 'Bob', servico: 'Banho + hidratação', etapa: 'agendado', blocos: [['Júlia', '11:00', '12:00']] },
+  { pet: 'Nina', servico: 'Banho + tosa bebê', etapa: 'agendado', blocos: [['Júlia', '12:30', '13:30'], ['Marcos', '13:30', '14:00']] },
+];
+
+async function agendaDoDia(loja: string, petIds: Record<string, string>) {
+  const dia = process.env.SEED_DIA ?? dayKeySP(new Date());
+  const profs = Object.fromEntries((await sql`select id, nome from profissionais where loja_id = ${loja}`).map((r) => [r.nome, r.id]));
+  const servs = Object.fromEntries((await sql`select id, nome from servicos where loja_id = ${loja}`).map((r) => [r.nome, r.id]));
+  for (const a of AGENDA) {
+    const inicio = atSP(dia, a.blocos[0][1]);
+    const fim = atSP(dia, a.blocos[a.blocos.length - 1][2]);
+    const [{ preco }] = await sql`select ps.preco_centavos as preco from precos_servico ps join pets p on p.porte = ps.porte
+      where ps.servico_id = ${servs[a.servico]} and p.id = ${petIds[a.pet]}`;
+    const [{ id }] = await sql`insert into agendamentos (loja_id, pet_id, servico_id, preco_centavos, etapa, inicio, fim)
+      values (${loja}, ${petIds[a.pet]}, ${servs[a.servico]}, ${preco}, ${a.etapa}, ${inicio}, ${fim}) returning id`;
+    for (const [prof, de, ate] of a.blocos) {
+      await sql`insert into agendamento_blocos (loja_id, agendamento_id, profissional_id, periodo)
+        values (${loja}, ${id}, ${profs[prof]}, tstzrange(${atSP(dia, de)}, ${atSP(dia, ate)}))`;
+    }
+  }
+}
+
 export async function seed() {
   await sql`truncate lojas cascade`;
   await sql`delete from auth.users`;
@@ -48,10 +77,13 @@ export async function seed() {
       await sql`insert into precos_servico (servico_id, loja_id, porte, preco_centavos, duracao_min) values (${id}, ${loja}, ${p}, ${preco}, ${dur})`;
     }
   }
+  const petIds: Record<string, string> = {};
   for (const p of PETS) {
     const [{ id: tutor }] = await sql`insert into tutores (loja_id, nome, telefone_e164) values (${loja}, ${p.tutor}, ${p.tel}) returning id`;
-    await sql`insert into pets (loja_id, tutor_id, nome, raca, porte, cuidados) values (${loja}, ${tutor}, ${p.pet}, ${p.raca}, ${p.porte}, ${p.cuidados})`;
+    const [{ id }] = await sql`insert into pets (loja_id, tutor_id, nome, raca, porte, cuidados) values (${loja}, ${tutor}, ${p.pet}, ${p.raca}, ${p.porte}, ${p.cuidados}) returning id`;
+    petIds[p.pet] = id;
   }
+  await agendaDoDia(loja, petIds);
   return { loja, dona, rec };
 }
 
