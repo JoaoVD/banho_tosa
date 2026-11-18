@@ -2,6 +2,7 @@ import { BOARD_STAGES, boardEtapa, type BoardStage } from '@/domain/stages';
 import { addDaysKey, atSP, hhmmSP } from '@/domain/time';
 import type { Etapa } from '@/domain/types';
 import type { Tx } from '../session';
+import { petsNoPontoDeVoltar } from './pets';
 
 export type CardPet = {
   agendamentoId: string;
@@ -91,7 +92,7 @@ export async function getHoje(tx: Tx, dia: string, agora: Date): Promise<Hoje> {
       pagamentos: 0,
     },
     colunas,
-    noPontoDeVoltar: [],
+    noPontoDeVoltar: (await petsNoPontoDeVoltar(tx, dia)).map((p) => ({ petId: p.petId, petNome: p.petNome })),
   };
 }
 

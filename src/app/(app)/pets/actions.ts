@@ -60,3 +60,10 @@ export async function salvarFoto(petId: string, url: string | null) {
   await withSession(user, (tx) => updatePet(tx, petId, { fotoUrl: url }));
   revalidatePath(`/pets/${petId}`);
 }
+
+export async function fixarCicloAction(petId: string, dias: number | null) {
+  const user = await getUser();
+  const { fixarCiclo } = await import('@/db/repos/pets');
+  await withSession(user, (tx) => fixarCiclo(tx, petId, dias && dias > 0 ? Math.round(dias) : null));
+  revalidatePath(`/pets/${petId}`);
+}

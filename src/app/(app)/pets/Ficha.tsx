@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import type { PetFicha } from '@/db/repos/pets';
+import type { Atendimento, PetFicha } from '@/db/repos/pets';
+import { formatBRL } from '@/domain/money';
+import { Aneis, type CicloView, type PacoteView } from './Aneis';
 import { formatPhoneBR } from '@/domain/phone';
 import { PORTE_LABEL } from '@/domain/types';
 import { EmptyState, GroupList } from '@/ui/bits';
@@ -10,7 +12,7 @@ import { FotoPet } from './FotoPet';
 import { LembretesSwitch } from './LembretesSwitch';
 import s from './pets.module.css';
 
-export function Ficha({ ficha, extras }: { ficha: PetFicha; extras?: React.ReactNode }) {
+export function Ficha({ ficha, ciclo, historico, pacote = null, pontos = 0 }: { ficha: PetFicha; ciclo: CicloView; historico: Atendimento[]; pacote?: PacoteView; pontos?: number }) {
   const descricao = [ficha.raca ?? (ficha.especie === 'gato' ? 'Gato' : 'Cão'), `porte ${PORTE_LABEL[ficha.porte].toLowerCase()}`].join(', ');
   return (
     <>
@@ -24,7 +26,7 @@ export function Ficha({ ficha, extras }: { ficha: PetFicha; extras?: React.React
           <Link className={s.qbtn} href={`/agenda?novo=1&pet=${ficha.id}`}><Icon name="cal" size="lg" />Agendar</Link>
         </div>
       </div>
-      {extras}
+      <Aneis petId={ficha.id} ciclo={ciclo} pacote={pacote} pontos={pontos} />
       <GroupList label="Tutor">
         <div className="row"><span className="grow">Nome</span><span className="val">{ficha.tutor.nome}</span></div>
         <div className="row"><span className="grow">WhatsApp</span><span className="val">{formatPhoneBR(ficha.tutor.telefone)}</span></div>
@@ -36,7 +38,19 @@ export function Ficha({ ficha, extras }: { ficha: PetFicha; extras?: React.React
       </div>
       <div>
         <p className="glabel">Atendimentos</p>
-        <div className="card"><EmptyState text="Ainda sem atendimentos. O primeiro aparece aqui assim que for pago." /></div>
+        {historico.length ? (
+          <div className="glist">
+            {historico.map((h) => (
+              <div className="row" key={h.id}>
+                <span className="cap num" style={{ width: 56 }}>{h.dia.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', timeZone: 'America/Sao_Paulo' }).replace('.', '')}</span>
+                <span className="grow">{h.servico}{h.profissional && <><br /><span className="cap">{`com ${h.profissional}`}</span></>}</span>
+                {h.pacote ? <span className="chip tint">Pacote</span> : <span className="val">{h.valorCentavos !== null ? formatBRL(h.valorCentavos) : ''}</span>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="card"><EmptyState text="Ainda sem atendimentos. O primeiro aparece aqui assim que for pago." /></div>
+        )}
       </div>
     </>
   );
