@@ -1,0 +1,14 @@
+.big { font-family: var(--font-d); font-size: 64px; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
+.bars { display: flex; height: 12px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--fill); }
+.legend { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.legend div { display: flex; flex-direction: column; gap: 2px; }
+.legend span { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink2); font-weight: 500; }
+.legend i { width: 8px; height: 8px; border-radius: 2px; display: block; }
+.legend b { font-size: 17px; }
+.split { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.lista { flex: 999 1 460px; min-width: 0; }
+.gaveta { flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px; }
+.campo { border: 0; background: transparent; text-align: right; width: 110px; font-size: 16px; }
+.campo:focus { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 40%, transparent); border-radius: 8px; }
+.campo[aria-invalid="true"] { color: var(--red); }
+@media (max-width: 900px) { .big { font-size: 46px; } .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

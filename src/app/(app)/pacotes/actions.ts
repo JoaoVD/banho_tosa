@@ -8,6 +8,7 @@ import { parseBRL } from '@/domain/money';
 import { dayKeySP } from '@/domain/time';
 import { PORTES, type Porte } from '@/domain/types';
 import { agora } from '@/lib/agora';
+import { diaCaixaAtual } from '@/db/repos/caixa';
 import type { FormResult } from '@/ui/ActionForm';
 
 export async function salvarModelo(_: FormResult, f: FormData): Promise<FormResult> {
@@ -49,7 +50,7 @@ export async function modelosParaVenda() {
 
 export async function venderAction(input: { idempotencyKey: string; tutorId: string; modeloId: string; forma: 'pix' | 'credito' | 'debito' | 'dinheiro' }) {
   const user = await getUser();
-  await withSession(user, (tx) => venderPacote(tx, user.lojaId, user.id, { ...input, diaCaixa: dayKeySP(agora()) }));
+  await withSession(user, async (tx) => venderPacote(tx, user.lojaId, user.id, { ...input, diaCaixa: await diaCaixaAtual(tx, agora()) }));
   revalidatePath('/pacotes');
   revalidatePath('/pets', 'layout');
   revalidatePath('/hoje');
