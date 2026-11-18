@@ -200,7 +200,7 @@ banho-e-tosa/
 
 **Interfaces:**
 - Tables:
-  - `lojas(id, nome, telefone_dona, logo_url, criado_em)`;
+  - `lojas(id, nome, telefone_dona, logo_url, onboarding_concluido bool default false, criado_em)`;
   - `perfis(user_id uuid pk references auth.users, loja_id, nome, papel text check in ('dona','recepcao'))`;
   - `horarios_funcionamento(loja_id, dia_semana 0-6, abre time, fecha time)`;
   - `profissionais(id, loja_id, nome, funcao text check in ('banho','tosa'), ativo)`;
@@ -410,7 +410,7 @@ banho-e-tosa/
   - `agendamento_blocos(id, loja_id, agendamento_id, profissional_id, periodo tstzrange, exclude using gist (profissional_id with =, periodo with &&) where (ativo))`. A "banho + tosa" appointment has two blocks, bather then groomer;
   - `etapas_historico(agendamento_id, etapa, em timestamptz, usuario_id)`.
 - `stages.ts`:
-  - `BOARD_STAGES = ['chegando','banho','tosa','pronto'] as const`;
+  - `BOARD_STAGES = ['chegando','banho','tosa','pronto'] as const` and `type BoardStage = typeof BOARD_STAGES[number]`;
   - `nextStage(etapa: Etapa, servico: {incluiBanho: boolean; incluiTosa: boolean}): Etapa | null` (banho goes to tosa only if `incluiTosa`, otherwise to pronto; tosa goes to pronto; pronto gives null);
   - `stageVerb(etapa)` gives `'Começar banho' | 'Levar para tosa' | 'Marcar como pronto'`;
   - `boardEtapa(a: {etapa: Etapa; inicio: Date}, today: string)` turns `agendado` into `chegando` when `dayKeySP(inicio) === today`.
@@ -508,7 +508,7 @@ banho-e-tosa/
 
 **Interfaces:**
 - `suggestCycle(visitas: Date[], padrao: number): number` returns the median of the intervals in days when there are 3 or more completed visits; otherwise it returns `padrao`.
-- `cycleStatus(input: {ultimaVisita: Date | null; cicloDias: number; temAgendamentoFuturo: boolean; hoje: string}): {diasDesde: number | null; voltaEm: number | null; noPonto: boolean}`.
+- `type CycleStatus = {diasDesde: number | null; voltaEm: number | null; noPonto: boolean}` and `cycleStatus(input: {ultimaVisita: Date | null; cicloDias: number; temAgendamentoFuturo: boolean; hoje: string}): CycleStatus`.
   - `noPonto` is true when `diasDesde >= cicloDias` and there is no future appointment.
 - Ficha ring 1 shows `{diasDesde}d`, with the text "Hora de voltar", "Volta amanhã" or "Volta em N dias" and "Ciclo de N dias".
   - The ring tone is orange when `voltaEm <= 1`.
@@ -546,6 +546,7 @@ banho-e-tosa/
   - view `saldo_pontos(tutor_id, saldo)`;
   - `caixa_dias(loja_id, dia date, fechado_em, fechado_por, contado_centavos, esperado_centavos, diferenca_centavos, reaberto_em, pk(loja_id, dia))`.
 - `points.ts`:
+  - types added to `src/domain/types.ts`: `Premio = {id: string; nome: string; pontos: number; servicoId: string | null}` and `PacoteCliente = {id: string; saldo: number; validoAte: string; servicoId: string; porte: Porte | null}`;
   - `pointsEarned(paidCentavos: number): number` is `floor(cents/100)`;
   - `availablePrizes(saldo: number, premios: Premio[]): Premio[]`.
 - `packages.ts`:
@@ -680,6 +681,9 @@ banho-e-tosa/
   - `modelos_mensagem(loja_id, tipo, texto, pk(loja_id, tipo))`;
   - `propostas_horario(id, loja_id, tutor_id, pet_id, servico_id, inicio timestamptz, status 'enviada'|'respondida'|'confirmada'|'descartada', criada_em)`;
   - `lembretes_enviados(tutor_id, enviado_em, respondido bool)`;
+  - `execucoes_diarias(loja_id, dia date, tipo text, unique(loja_id, dia, tipo))`;
+  - dev-only tables `fake_whatsapp_log(id, para, texto, em)` and `fake_whatsapp_estado(chave text pk, valor text)`, read only by `FakeProvider`;
+  - `alter table configuracoes add column whatsapp_instancia text`;
   - seed default templates per store.
 - `type TipoMensagem = 'lembrete_retorno'|'confirmacao'|'vespera'|'pronto'|'pacote_acabando'|'resumo_caixa'`.
 - Default texts (editable later):
@@ -880,7 +884,7 @@ banho-e-tosa/
   - Type `{foo}` and see the error.
   - With the fake provider set to `close`, the QR area is visible.
 - [ ] **Step 2:** Run. Expected: FAIL.
-- [ ] **Step 3:** Implement. `FakeProvider.connection()` reads a dev toggle stored in `fake_whatsapp_log` settings.
+- [ ] **Step 3:** Implement. `FakeProvider.connection()` reads the dev toggle `fake_whatsapp_estado` where `chave = 'conexao'`.
 - [ ] **Step 4:** Run. Expected: PASS.
 - [ ] **Step 5:** Commit `feat(config): WhatsApp connection and editable message templates`.
 
