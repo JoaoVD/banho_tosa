@@ -2,10 +2,10 @@
 .card{width:min(400px,100%);background:#fff;border-radius:26px;padding:36px 28px 28px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 40px rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;text-align:center}
 .icon{width:64px;height:64px;border-radius:16px;background:linear-gradient(160deg,#5FE3C9,#00877C);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 .5px 0 rgba(255,255,255,.5),0 6px 16px rgba(0,135,124,.35)}
 .title{margin:16px 0 4px;font-size:28px;font-weight:700;letter-spacing:-.025em}
-.sub{margin:0 0 22px;color:#6E6E73;font-size:15px}
+.sub{margin:0 0 22px;color:#636366;font-size:15px}
 .form{width:100%;display:flex;flex-direction:column;gap:14px;text-align:left}
 .field{display:flex;flex-direction:column;gap:6px}
-.field label{font-size:13px;font-weight:600;color:#6E6E73;margin-left:4px}
+.field label{font-size:13px;font-weight:600;color:#636366;margin-left:4px}
 .field input{min-height:46px;border:0;border-radius:12px;background:#F5F5F7;padding:0 14px;font:inherit;font-size:16px;color:#1D1D1F}
 .field input:focus{outline:none;box-shadow:0 0 0 3.5px rgba(0,135,124,.4)}
 .error{margin:0;color:#C9241B;font-size:14px;font-weight:600;text-align:center}

@@ -1,9 +1,9 @@
 /* Design system "app da Apple", versão clara. Fonte: docs/prototipo/prototipo.html */
 :root {
   --bg: #F5F5F7; --surface: #FFFFFF; --fill: rgba(118,118,128,.12); --fill2: rgba(118,118,128,.08);
-  --sep: rgba(60,60,67,.14); --ink: #1D1D1F; --ink2: #6E6E73; --ink3: #86868B;
+  --sep: rgba(60,60,67,.14); --ink: #1D1D1F; --ink2: #636366; --ink3: #86868B;
   --tint: #00766C; --tint-hover: #00625A; --on-tint: #FFFFFF; --tint-soft: rgba(0,118,108,.10);
-  --orange: #C25E00; --orange-fill: #FF9500; --orange-soft: rgba(255,149,0,.14);
+  --orange: #A04B00; --orange-fill: #FF9500; --orange-soft: rgba(255,149,0,.14);
   --green: #1E7B34; --green-fill: #34C759; --green-soft: rgba(52,199,89,.14);
   --red: #C9241B; --red-soft: rgba(255,59,48,.12);
   --glass: rgba(250,250,252,.72); --glass-side: rgba(236,236,240,.78); --glass-line: rgba(0,0,0,.08);
