@@ -1,0 +1,10 @@
+{
+  "event": "messages.upsert",
+  "instance": "banho-e-tosa",
+  "data": {
+    "key": { "remoteJid": "5511987654321@s.whatsapp.net", "fromMe": true, "id": "3EB0AAA" },
+    "message": { "extendedTextMessage": { "text": "Já já fica pronto!" } },
+    "messageType": "extendedTextMessage",
+    "messageTimestamp": 1763470300
+  }
+}

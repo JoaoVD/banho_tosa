@@ -1,0 +1,1 @@
+{ "event": "connection.update", "instance": "banho-e-tosa", "data": { "instance": "banho-e-tosa", "state": "open", "statusReason": 200 } }

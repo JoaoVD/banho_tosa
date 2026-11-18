@@ -1,0 +1,9 @@
+{
+  "event": "messages.upsert",
+  "instance": "banho-e-tosa",
+  "data": {
+    "key": { "remoteJid": "120363025246125486@g.us", "fromMe": false, "id": "3EB0GRP", "participant": "5511900000000@s.whatsapp.net" },
+    "message": { "conversation": "Bom dia grupo" },
+    "messageTimestamp": 1763470300
+  }
+}

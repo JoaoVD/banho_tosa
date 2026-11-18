@@ -1,0 +1,13 @@
+{
+  "event": "messages.upsert",
+  "instance": "banho-e-tosa",
+  "data": {
+    "key": { "remoteJid": "5511987654321@s.whatsapp.net", "fromMe": false, "id": "3EB0C767D26A1B3C5F12" },
+    "pushName": "Ana Souza",
+    "message": { "conversation": "Pode sim! Deixo ele lá às 10h" },
+    "messageType": "conversation",
+    "messageTimestamp": 1763470260
+  },
+  "date_time": "2026-11-18T10:31:00.000Z",
+  "sender": "5511987659999@s.whatsapp.net"
+}
