@@ -6,8 +6,9 @@ import { realClock } from './clock';
 import { runDaily } from './daily';
 import { drainOnce } from './send-queue';
 import { WORKER_SQL_OPTIONS } from './options';
+import { urlDoBanco } from '@/db/client';
 
-const url = process.env.SUPABASE_SERVICE_DATABASE_URL ?? process.env.DATABASE_URL;
+const url = urlDoBanco(process.env, true);
 if (!url) throw new Error('SUPABASE_SERVICE_DATABASE_URL não configurado');
 const sql = postgres(url, WORKER_SQL_OPTIONS);
 const PAUSA_MS = 30_000;
