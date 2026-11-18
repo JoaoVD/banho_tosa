@@ -20,6 +20,8 @@ test('cadastra tutor e pet, filtra, abre a ficha e desliga lembretes', async ({ 
   await page.getByLabel('Filtrar').fill('Paçoca');
   await expect(page.getByRole('link', { name: /Paçoca/ })).toHaveCount(1);
   await page.getByRole('link', { name: /Paçoca/ }).click();
+  await expect(page).toHaveURL(/\/pets\/[0-9a-f-]{36}/);
+  await page.waitForLoadState('networkidle');
 
   const sw = page.getByRole('switch', { name: 'Lembretes automáticos' });
   await expect(sw).toBeChecked();

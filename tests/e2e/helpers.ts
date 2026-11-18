@@ -12,6 +12,9 @@ import AxeBuilder from '@axe-core/playwright';
 
 /** Ids das violações sérias ou críticas de acessibilidade na página atual. */
 export async function violacoesGraves(page: Page): Promise<string[]> {
+  // Sem animações: a entrada da tela (fade) faria o axe medir cores semitransparentes.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
   // @axe-core/playwright tipa contra outra versão do Playwright; a API usada é a mesma.
   const res = await new AxeBuilder({ page } as unknown as ConstructorParameters<typeof AxeBuilder>[0]).analyze();
   return res.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id);
