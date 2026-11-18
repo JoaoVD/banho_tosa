@@ -1,0 +1,24 @@
+import { getUser } from '@/auth/current';
+import { withSession } from '@/db/session';
+import { sairAction } from '@/app/entrar/actions';
+import { Sidebar } from '@/ui/Sidebar';
+import { Toolbar } from '@/ui/Toolbar';
+import { ToastProvider } from '@/ui/Toast';
+
+export const dynamic = 'force-dynamic';
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const user = await getUser();
+  const [loja] = await withSession(user, (tx) => tx<{ nome: string }[]>`select nome from lojas where id = ${user.lojaId}`);
+  return (
+    <ToastProvider>
+      <div className="app">
+        <Sidebar papel={user.papel} nomeLoja={loja?.nome ?? 'Banho e Tosa'} naoLidas={0} sair={sairAction} />
+        <div className="work">
+          <Toolbar whatsappOk />
+          <main className="content" id="conteudo" tabIndex={-1}>{children}</main>
+        </div>
+      </div>
+    </ToastProvider>
+  );
+}
