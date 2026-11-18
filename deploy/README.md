@@ -92,3 +92,15 @@ Custo aproximado: Supabase e Vercel no plano gratuito aguentam uma loja; a VPS c
 - Ver o worker: `docker compose -f deploy/docker-compose.vps.yml logs -f worker`
 - Atualizar depois de uma nova versão: `git pull && docker compose -f deploy/docker-compose.vps.yml --env-file deploy/.env.vps up -d --build`
 - Os limites de envio (horário, teto diário, intervalo) ficam em **Configurações › Lembretes, envio e caixa**.
+
+## Loja de demonstração (apresentações)
+
+Existe uma loja separada, **Pet Spa Demonstração**, com cerca de 30 clientes, histórico de 3 meses, o dia de hoje no quadro, a agenda da semana, pacotes, pontos, conversas de WhatsApp e caixas fechados.
+
+- Dona: `dona.demo@exemplo.com.br` · Recepção: `recepcao.demo@exemplo.com.br` · senha: `demo1234`
+- A loja é marcada como demo: **o sistema nunca envia WhatsApp para ela** (os telefones são inventados).
+- As datas são relativas ao dia em que os dados foram gerados. **Antes de cada apresentação**, gere de novo para o quadro do dia ficar atual:
+  ```bash
+  npm run -s demo:sql > demo.sql
+  ```
+  e cole o conteúdo de `demo.sql` no **Supabase › SQL Editor** › *Run*. Só a loja demo é apagada e recriada; a loja de verdade não é tocada.

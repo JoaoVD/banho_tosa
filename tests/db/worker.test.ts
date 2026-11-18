@@ -118,3 +118,17 @@ test('véspera: avisa quem tem banho amanhã', async () => {
   const [f] = await sql`select texto from fila_envio where tipo = 'vespera'`;
   expect(f.texto).toContain('amanhã às 11:00');
 });
+
+test('loja de demonstração nunca envia WhatsApp nem gera lembretes', async () => {
+  const a = await seedLoja();
+  const op = await seedOperacao(a.lojaId);
+  await sql`update lojas set demo = true where id = ${a.lojaId}`;
+  await fila(a.lojaId, 1, 'imediata', 'pronto');
+  await petAtrasado(a.lojaId, op, 'Marta', '+5511911110001', 20);
+  const clock = fakeClock(atSP('2026-11-18', '10:00'));
+  const { p, enviados } = provedor(clock);
+  await drainOnce({ sql, provider: p, clock, random: () => 0, lojaId: a.lojaId });
+  const r = await runDaily({ sql, clock, lojaId: a.lojaId }, '2026-11-18');
+  expect(enviados).toEqual([]);
+  expect(r).toEqual({ lembretes: 0, vesperas: 0 });
+});
