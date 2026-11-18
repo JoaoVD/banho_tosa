@@ -12,6 +12,8 @@ const LOJA: Item[] = [
   { href: '/configuracoes/servicos', label: 'Serviços e preços', sub: 'Preço e duração por porte', icon: 'drop', color: 'pink' },
 ];
 const AUTO: Item[] = [
+  { href: '/configuracoes/whatsapp', label: 'WhatsApp', sub: 'Conexão do número da loja', icon: 'msg', color: 'green' },
+  { href: '/configuracoes/mensagens', label: 'Mensagens automáticas', sub: 'Textos dos lembretes e avisos', icon: 'send', color: 'blue' },
   { href: '/configuracoes/envio', label: 'Lembretes, envio e caixa', sub: 'Horário dos lembretes, limites e fundo de troco', icon: 'bell', color: 'red' },
 ];
 const DADOS: Item[] = [
