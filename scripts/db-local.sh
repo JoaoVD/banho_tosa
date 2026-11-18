@@ -23,7 +23,7 @@ start() {
 }
 apply() {
   psql "$URL" -q -v ON_ERROR_STOP=1 -c "drop schema if exists public cascade; create schema public; grant usage on schema public to anon, authenticated, service_role;" 2>/dev/null || true
-  psql "$URL" -q -v ON_ERROR_STOP=1 -f supabase/local/shim.sql
+  psql "$URL" -q -v ON_ERROR_STOP=1 -c "set client_min_messages=warning" -f supabase/local/shim.sql
   psql "$URL" -q -v ON_ERROR_STOP=1 -c "grant usage on schema public to anon, authenticated, service_role;"
   for f in supabase/migrations/*.sql; do [ -e "$f" ] && psql "$URL" -q -v ON_ERROR_STOP=1 -f "$f"; done
   echo "DATABASE_URL=$URL"

@@ -23,3 +23,21 @@ export async function resetDb(): Promise<void> {
   if (tables.length) await sql.unsafe(`truncate ${tables.map((r) => r.t).join(', ')} restart identity cascade`);
   await sql`delete from auth.users`;
 }
+
+export interface LojaSeed {
+  lojaId: string;
+  donaId: string;
+  recepcaoId: string;
+}
+
+/** Cria uma loja com uma dona e uma recepcionista (via conexão de serviço). */
+export async function seedLoja(nome = 'Loja Teste'): Promise<LojaSeed> {
+  const [{ id: lojaId }] = await sql<{ id: string }[]>`insert into lojas (nome) values (${nome}) returning id`;
+  const donaId = crypto.randomUUID();
+  const recepcaoId = crypto.randomUUID();
+  await sql`insert into auth.users (id, email) values (${donaId}, ${`dona-${donaId}@t.dev`}), (${recepcaoId}, ${`rec-${recepcaoId}@t.dev`})`;
+  await sql`insert into perfis (user_id, loja_id, nome, papel) values
+    (${donaId}, ${lojaId}, 'Dona', 'dona'), (${recepcaoId}, ${lojaId}, 'Renata', 'recepcao')`;
+  await sql`insert into configuracoes (loja_id) values (${lojaId})`;
+  return { lojaId, donaId, recepcaoId };
+}
