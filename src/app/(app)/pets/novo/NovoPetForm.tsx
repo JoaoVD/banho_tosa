@@ -7,7 +7,7 @@ import { cadastrarPet } from '../actions';
 
 const grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 } as const;
 
-export function NovoPetForm() {
+export function NovoPetForm({ telefone = '' }: { telefone?: string }) {
   return (
     <ActionForm action={cadastrarPet}>
       {(s, pending) => (
@@ -15,7 +15,7 @@ export function NovoPetForm() {
           <p className="glabel" style={{ marginBottom: -8 }}>Tutor</p>
           <div className="card pad" style={grid}>
             <Field label="Nome do tutor" error={s.fieldErrors?.tutorNome}><input className="input" name="tutorNome" autoComplete="off" /></Field>
-            <Field label="WhatsApp do tutor" error={s.fieldErrors?.telefone} help="Se o telefone já existir, o pet entra no mesmo tutor."><input className="input" name="telefone" inputMode="tel" placeholder="(11) 98765-4321" /></Field>
+            <Field label="WhatsApp do tutor" error={s.fieldErrors?.telefone} help="Se o telefone já existir, o pet entra no mesmo tutor."><input className="input" name="telefone" inputMode="tel" placeholder="(11) 98765-4321" defaultValue={telefone} /></Field>
           </div>
           <p className="glabel" style={{ marginBottom: -8 }}>Pet</p>
           <div className="card pad" style={grid}>

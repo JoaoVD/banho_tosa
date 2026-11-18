@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getUser } from '@/auth/current';
 import { withSession } from '@/db/session';
+import { totalNaoLidas } from '@/db/repos/mensagens';
+import { getProvider } from '@/whatsapp/provider';
 import { sairAction } from '@/app/entrar/actions';
 import { Sidebar } from '@/ui/Sidebar';
 import { Toolbar } from '@/ui/Toolbar';
@@ -13,14 +15,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const [loja] = await withSession(user, (tx) => tx<{ nome: string; onboarding: boolean; tutores: number }[]>`
     select nome, onboarding_concluido as onboarding, (select count(*)::int from tutores where loja_id = ${user.lojaId}) as tutores
     from lojas where id = ${user.lojaId}`);
+  const naoLidas = await withSession(user, totalNaoLidas);
+  const whatsappOk = (await (await getProvider()).connection().catch(() => ({ state: 'close' }))).state === 'open';
   // Primeiro acesso da dona: escolher entre importar planilha e começar do zero.
   if (user.papel === 'dona' && loja && !loja.onboarding && loja.tutores === 0) redirect('/boas-vindas');
   return (
     <ToastProvider>
       <div className="app">
-        <Sidebar papel={user.papel} nomeLoja={loja?.nome ?? 'Banho e Tosa'} naoLidas={0} sair={sairAction} />
+        <Sidebar papel={user.papel} nomeLoja={loja?.nome ?? 'Banho e Tosa'} naoLidas={naoLidas} sair={sairAction} />
         <div className="work">
-          <Toolbar whatsappOk />
+          <Toolbar whatsappOk={whatsappOk} />
           <main className="content" id="conteudo" tabIndex={-1}>{children}</main>
         </div>
       </div>

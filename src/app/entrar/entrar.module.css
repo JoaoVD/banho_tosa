@@ -9,7 +9,7 @@
 .field input{min-height:46px;border:0;border-radius:12px;background:#F5F5F7;padding:0 14px;font:inherit;font-size:16px;color:#1D1D1F}
 .field input:focus{outline:none;box-shadow:0 0 0 3.5px rgba(0,135,124,.4)}
 .error{margin:0;color:#C9241B;font-size:14px;font-weight:600;text-align:center}
-.button{margin-top:6px;min-height:50px;border:0;border-radius:14px;background:#00877C;color:#fff;font:inherit;font-size:17px;font-weight:600;cursor:pointer}
-.button:hover{background:#006F66}
+.button{margin-top:6px;min-height:50px;border:0;border-radius:14px;background:#00766C;color:#fff;font:inherit;font-size:17px;font-weight:600;cursor:pointer}
+.button:hover{background:#00625A}
 .button:focus-visible{outline:3px solid rgba(0,135,124,.55);outline-offset:2px}
 .button:disabled{opacity:.7}

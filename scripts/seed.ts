@@ -82,6 +82,24 @@ async function fidelidade(loja: string) {
   await sql`update agendamentos set etapa = 'concluido' where id = ${mel.id}`;
 }
 
+async function conversas(loja: string) {
+  const dia = process.env.SEED_DIA ?? dayKeySP(new Date());
+  const amanha = new Date(Date.parse(`${dia}T12:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+  const [ana] = await sql`select t.id as tutor, p.id as pet from tutores t join pets p on p.tutor_id = t.id where t.nome = 'Ana Souza' and t.loja_id = ${loja}`;
+  const [banho] = await sql`select id from servicos where nome = 'Banho' and loja_id = ${loja}`;
+  await sql`insert into propostas_horario (loja_id, tutor_id, pet_id, servico_id, inicio, criada_em)
+    values (${loja}, ${ana.tutor}, ${ana.pet}, ${banho.id}, ${atSP(amanha, '10:00')}, ${atSP(dia, '09:00')})`;
+  const [c] = await sql`insert into conversas (loja_id, telefone_e164, tutor_id, ultima_em) values (${loja}, '+5511987650000', ${ana.tutor}, ${atSP(dia, '09:00')}) returning id`;
+  await sql`insert into mensagens (loja_id, conversa_id, direcao, origem, tipo, automatica, texto, status, em) values
+    (${loja}, ${c.id}, 'out', 'sistema', 'lembrete_retorno', true, 'Oi Ana! O Thor já está no ponto do banho. Temos quinta, 19/11 às 10:00, pode ser?', 'enviada', ${atSP(dia, '09:00')})`;
+  await sql`insert into lembretes_enviados (loja_id, tutor_id, enviado_em) values (${loja}, ${ana.tutor}, ${atSP(dia, '09:00')})`;
+  const [pedro] = await sql`select id from tutores where nome = 'Pedro Alves' and loja_id = ${loja}`;
+  const [c2] = await sql`insert into conversas (loja_id, telefone_e164, tutor_id, ultima_em) values (${loja}, '+5511987650005', ${pedro.id}, ${atSP(dia, '10:07')}) returning id`;
+  await sql`insert into mensagens (loja_id, conversa_id, direcao, origem, tipo, automatica, texto, status, em) values
+    (${loja}, ${c2.id}, 'out', 'sistema', 'pronto', true, 'Oi Pedro! A Mel está pronta e cheirosa. Pode vir buscar quando quiser.', 'enviada', ${atSP(dia, '10:05')}),
+    (${loja}, ${c2.id}, 'in', 'tutor', null, false, 'Obrigado! Passo às 11h', 'recebida', ${atSP(dia, '10:07')})`;
+}
+
 export async function seed() {
   await sql`truncate lojas cascade`;
   await sql`delete from auth.users`;
@@ -112,6 +130,7 @@ export async function seed() {
   }
   await agendaDoDia(loja, petIds);
   await fidelidade(loja);
+  await conversas(loja);
   return { loja, dona, rec };
 }
 

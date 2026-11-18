@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { entrar } from './helpers';
+import { entrar, resetarDados } from './helpers';
+
+test.beforeEach(() => resetarDados());
 
 test('cadastra tutor e pet, filtra, abre a ficha e desliga lembretes', async ({ page }) => {
   await entrar(page);

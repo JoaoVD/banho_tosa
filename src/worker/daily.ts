@@ -34,8 +34,8 @@ export async function runDaily({ sql, clock, lojaId }: DailyDeps, dia: string): 
     const histRows = await tx`select tutor_id, enviado_em, respondido from lembretes_enviados where loja_id = ${lojaId}`;
     const hist = new Map<string, HistLembrete[]>();
     for (const h of histRows) hist.set(h.tutor_id, [...(hist.get(h.tutor_id) ?? []), { enviadoEm: new Date(h.enviado_em), respondido: h.respondido }]);
-    const [cfg] = await tx`select remover_lembretes from configuracoes where loja_id = ${lojaId}`;
-    const removidos = new Set<string>((cfg?.remover_lembretes ?? []).filter((r: { dia: string }) => r.dia === dia).map((r: { tutorId: string }) => r.tutorId));
+    const pulados = await tx`select tutor_id from lembretes_pulados where loja_id = ${lojaId} and dia = ${dia}::date`;
+    const removidos = new Set<string>(pulados.map((r) => r.tutor_id));
     const candidatos = selectReminderCandidates(
       pets.map((p) => ({ petId: p.petId, tutorId: p.tutorId, lembretesAtivos: p.lembretesAtivos, status: p.ciclo })),
       hist,

@@ -95,7 +95,7 @@ export async function getHoje(tx: Tx, dia: string, agora: Date): Promise<Hoje> {
       emAtendimento: todos.filter((c) => c.etapa === 'banho' || c.etapa === 'tosa').length,
       agendados: todos.length,
       paraReceber: colunas.pronto.filter((c) => !c.pago).map((c) => c.petNome),
-      respostas: 0,
+      respostas: (await tx`select coalesce(sum(nao_lidas), 0)::int as n from conversas where loja_id = loja_atual() and tutor_id is not null`)[0].n,
       recebidoCentavos: caixa.total,
       pagamentos: caixa.n,
     },

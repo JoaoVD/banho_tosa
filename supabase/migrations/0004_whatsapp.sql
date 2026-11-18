@@ -91,12 +91,18 @@ create table fake_whatsapp_log (
 create table fake_whatsapp_estado (chave text primary key, valor text not null);
 
 alter table configuracoes add column whatsapp_instancia text;
-alter table configuracoes add column remover_lembretes jsonb not null default '[]';
+-- "Tirar da lista" do próximo envio de lembretes (por dia).
+create table lembretes_pulados (
+  loja_id uuid not null references lojas(id) on delete cascade,
+  tutor_id uuid not null references tutores(id) on delete cascade,
+  dia date not null,
+  primary key (tutor_id, dia)
+);
 
 do $$
 declare t text;
 begin
-  foreach t in array array['conversas', 'mensagens', 'fila_envio', 'propostas_horario', 'lembretes_enviados', 'execucoes_diarias'] loop
+  foreach t in array array['conversas', 'mensagens', 'fila_envio', 'propostas_horario', 'lembretes_enviados', 'execucoes_diarias', 'lembretes_pulados'] loop
     execute format('alter table %1$s enable row level security', t);
     execute format('create policy %1$s_loja on %1$s for all to authenticated using (loja_id = loja_atual()) with check (loja_id = loja_atual())', t);
   end loop;
@@ -107,5 +113,5 @@ create policy modelos_dona on modelos_mensagem for all to authenticated using (l
 alter table fake_whatsapp_log enable row level security;
 alter table fake_whatsapp_estado enable row level security;
 
-grant select, insert, update, delete on conversas, mensagens, fila_envio, modelos_mensagem, propostas_horario, lembretes_enviados, execucoes_diarias to authenticated, service_role;
+grant select, insert, update, delete on lembretes_pulados, conversas, mensagens, fila_envio, modelos_mensagem, propostas_horario, lembretes_enviados, execucoes_diarias to authenticated, service_role;
 grant select, insert, update, delete on fake_whatsapp_log, fake_whatsapp_estado to service_role;
