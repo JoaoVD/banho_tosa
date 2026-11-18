@@ -28,9 +28,9 @@ const PETS = [
 ];
 
 // O dia de exemplo (SEED_DIA, padrão: hoje em São Paulo), igual ao protótipo.
-const AGENDA: { pet: string; servico: string; etapa: string; blocos: [string, string, string][] }[] = [
-  { pet: 'Mel', servico: 'Banho + escovação', etapa: 'pronto', blocos: [['Júlia', '08:00', '09:00']] },
-  { pet: 'Luna', servico: 'Banho', etapa: 'pronto', blocos: [['Júlia', '09:00', '10:00']] },
+const AGENDA: { pet: string; servico: string; etapa: string; blocos: [string, string, string][]; aviso?: string }[] = [
+  { pet: 'Mel', servico: 'Banho + escovação', etapa: 'pronto', blocos: [['Júlia', '08:00', '09:00']], aviso: '10:05' },
+  { pet: 'Luna', servico: 'Banho', etapa: 'pronto', blocos: [['Júlia', '09:00', '10:00']], aviso: '10:12' },
   { pet: 'Pipoca', servico: 'Tosa na tesoura', etapa: 'tosa', blocos: [['Marcos', '09:30', '10:55']] },
   { pet: 'Thor', servico: 'Banho + tosa higiênica', etapa: 'banho', blocos: [['Júlia', '10:00', '10:55'], ['Marcos', '10:55', '11:30']] },
   { pet: 'Bob', servico: 'Banho + hidratação', etapa: 'agendado', blocos: [['Júlia', '11:00', '12:00']] },
@@ -46,8 +46,9 @@ async function agendaDoDia(loja: string, petIds: Record<string, string>) {
     const fim = atSP(dia, a.blocos[a.blocos.length - 1][2]);
     const [{ preco }] = await sql`select ps.preco_centavos as preco from precos_servico ps join pets p on p.porte = ps.porte
       where ps.servico_id = ${servs[a.servico]} and p.id = ${petIds[a.pet]}`;
-    const [{ id }] = await sql`insert into agendamentos (loja_id, pet_id, servico_id, preco_centavos, etapa, inicio, fim)
-      values (${loja}, ${petIds[a.pet]}, ${servs[a.servico]}, ${preco}, ${a.etapa}, ${inicio}, ${fim}) returning id`;
+    const aviso = a.aviso ? atSP(dia, a.aviso) : null;
+    const [{ id }] = await sql`insert into agendamentos (loja_id, pet_id, servico_id, preco_centavos, etapa, inicio, fim, aviso_pronto_em, aviso_pronto_enviado)
+      values (${loja}, ${petIds[a.pet]}, ${servs[a.servico]}, ${preco}, ${a.etapa}, ${inicio}, ${fim}, ${aviso}, ${aviso ? true : null}) returning id`;
     for (const [prof, de, ate] of a.blocos) {
       await sql`insert into agendamento_blocos (loja_id, agendamento_id, profissional_id, periodo)
         values (${loja}, ${id}, ${profs[prof]}, tstzrange(${atSP(dia, de)}, ${atSP(dia, ate)}))`;

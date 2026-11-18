@@ -1,0 +1,22 @@
+.board { display: grid; grid-template-columns: repeat(4, minmax(232px, 1fr)); gap: 14px; overflow-x: auto; padding: 2px 2px 8px; }
+.col { border-radius: var(--r-xl); padding: 10px; display: flex; flex-direction: column; gap: 10px; min-height: 380px; background: var(--fill2); transition: background .2s, box-shadow .2s; }
+.over { background: var(--tint-soft); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--tint) 45%, transparent); }
+.colH { display: flex; align-items: center; gap: 8px; padding: 6px 8px 2px; font-size: 14px; font-weight: 600; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.n { margin-left: auto; color: var(--ink3); font-weight: 600; }
+.pet { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; transition: box-shadow .3s, opacity .2s; touch-action: manipulation; }
+.pet:hover { box-shadow: var(--shadow-hi); }
+.dragging { opacity: .85; box-shadow: var(--shadow-hi), 0 0 0 2px var(--tint); }
+.top { display: flex; align-items: center; gap: 10px; }
+.grip { cursor: grab; border: 0; background: transparent; color: var(--ink3); padding: 6px; margin: -6px -2px -6px -6px; border-radius: 8px; display: flex; touch-action: none; }
+.grip:hover { background: var(--fill2); color: var(--ink2); }
+.grip[aria-pressed="true"] { background: var(--tint-soft); color: var(--tint); }
+.nm { font-weight: 600; font-size: 16px; line-height: 1.2; }
+.br { font-size: 13px; color: var(--ink2); }
+.tm { margin-left: auto; align-self: flex-start; font-size: 13px; font-weight: 600; color: var(--ink2); }
+.svc { font-size: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.note { font-size: 13px; color: var(--ink2); }
+.notice { border-radius: var(--r-md); background: var(--orange-soft); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.notice p { margin: 0; font-size: 14px; font-weight: 500; }
+.switchrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; font-size: 14px; }

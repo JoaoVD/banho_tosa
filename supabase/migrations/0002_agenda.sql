@@ -16,6 +16,9 @@ create table agendamentos (
   cancelado_motivo text,
   -- Atendimento histórico (importado ou registrado depois): não ocupa agenda.
   historico boolean not null default false,
+  -- Aviso de "pet pronto": quando a recepção decidiu (null = ainda não) e se mandou mensagem.
+  aviso_pronto_em timestamptz,
+  aviso_pronto_enviado boolean,
   check (fim > inicio)
 );
 create index agendamentos_inicio_idx on agendamentos (loja_id, inicio);
