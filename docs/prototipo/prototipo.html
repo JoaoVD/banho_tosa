@@ -1,0 +1,716 @@
+<title>Banho e Tosa Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap">
+<style>
+/* Layout: app de Mac. Barra lateral translúcida (lista de fontes com ícones em quadradinhos coloridos), barra de ferramentas de vidro fixa, conteúdo em listas agrupadas e cartões com cantos contínuos. Uma cor de destaque (menta) + cores de sistema só para estado. */
+:root{
+  --bg:#F5F5F7; --surface:#FFFFFF; --fill:rgba(118,118,128,.12); --fill2:rgba(118,118,128,.08);
+  --sep:rgba(60,60,67,.14); --ink:#1D1D1F; --ink2:#6E6E73; --ink3:#86868B;
+  --tint:#00877C; --tint-hover:#006F66; --on-tint:#FFFFFF; --tint-soft:rgba(0,135,124,.10);
+  --orange:#C25E00; --orange-fill:#FF9500; --orange-soft:rgba(255,149,0,.14);
+  --green:#1E7B34; --green-fill:#34C759; --green-soft:rgba(52,199,89,.14);
+  --red:#C9241B; --red-soft:rgba(255,59,48,.12);
+  --glass:rgba(250,250,252,.72); --glass-side:rgba(236,236,240,.78); --glass-line:rgba(0,0,0,.08);
+  --shadow:0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.05);
+  --shadow-hi:0 2px 4px rgba(0,0,0,.05), 0 12px 32px rgba(0,0,0,.09);
+  --sheet:0 24px 80px rgba(0,0,0,.22), 0 0 0 .5px rgba(0,0,0,.1);
+  --font:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-d:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", system-ui, sans-serif;
+  --r-xl:22px; --r-lg:16px; --r-md:12px; --r-sm:10px;
+  --spring:cubic-bezier(.32,.72,0,1);
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;letter-spacing:-.011em}
+*{box-sizing:border-box}
+h1,h2,h3{font-family:var(--font-d);margin:0;text-wrap:balance}
+button,input,select{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.45}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--tint) 55%,transparent);outline-offset:2px;border-radius:10px}
+.num{font-variant-numeric:tabular-nums}
+.ic{width:18px;height:18px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ic.sm{width:15px;height:15px}
+.ic.lg{width:22px;height:22px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.muted{color:var(--ink2)}
+.cap{font-size:13px;color:var(--ink2)}
+
+/* Janela */
+.app{display:flex;min-height:100%;background:radial-gradient(1200px 600px at 100% -10%,color-mix(in srgb,var(--tint) 7%,transparent),transparent 60%),var(--bg)}
+.side{flex:0 0 248px;position:sticky;top:0;height:100vh;padding:20px 12px;display:flex;flex-direction:column;gap:2px;background:var(--glass-side);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-right:.5px solid var(--glass-line)}
+.app-id{display:flex;align-items:center;gap:10px;padding:4px 10px 18px}
+.app-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(160deg,#5FE3C9,#00877C);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:inset 0 .5px 0 rgba(255,255,255,.5),0 2px 6px rgba(0,135,124,.35)}
+.app-id b{font-size:16px;font-weight:700;display:block;line-height:1.1}
+.app-id span{font-size:12px;color:var(--ink2)}
+.side .group{font-size:12px;font-weight:600;color:var(--ink3);padding:14px 10px 6px}
+.side a{display:flex;align-items:center;gap:10px;min-height:38px;padding:0 10px;border-radius:9px;color:var(--ink);text-decoration:none;font-size:15px;font-weight:500;transition:background .15s}
+.side a:hover{background:var(--fill2)}
+.side a[aria-current="page"]{background:var(--fill)}
+.tile{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:inset 0 .5px 0 rgba(255,255,255,.35)}
+.tile .ic{width:15px;height:15px;stroke-width:2.2}
+.t-orange{background:linear-gradient(180deg,#FFAC33,#FF9500)} .t-red{background:linear-gradient(180deg,#FF6259,#FF3B30)}
+.t-blue{background:linear-gradient(180deg,#3B96FF,#007AFF)} .t-green{background:linear-gradient(180deg,#4CD964,#28B348)}
+.t-pink{background:linear-gradient(180deg,#FF5A7A,#FF2D55)} .t-teal{background:linear-gradient(180deg,#4FC3DB,#30A6C7)}
+.side .count{margin-left:auto;font-size:13px;font-weight:600;color:var(--ink2)}
+.side .count.hot{background:var(--orange-fill);color:#fff;border-radius:10px;padding:0 7px;min-width:20px;text-align:center}
+.side .foot{margin-top:auto;padding:12px 10px 0;font-size:12px;color:var(--ink3)}
+
+.work{flex:1;min-width:0;display:flex;flex-direction:column}
+.toolbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;display:flex;align-items:center;gap:12px;min-height:56px;padding-block:10px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));background:var(--glass);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-bottom:.5px solid var(--glass-line)}
+.toolbar .crumb{font-weight:600;font-size:15px}
+.search{position:relative;flex:0 1 300px;margin-left:auto}
+.search .ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink3)}
+.search input{width:100%;min-height:36px;border-radius:10px;border:0;background:var(--fill);padding:0 12px 0 34px;font-size:15px}
+.search input::placeholder{color:var(--ink3)}
+.search input:focus{outline:none;box-shadow:0 0 0 3.5px color-mix(in srgb,var(--tint) 40%,transparent)}
+.wa{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.wa i{width:8px;height:8px;border-radius:50%;background:var(--green-fill);box-shadow:0 0 0 3px var(--green-soft);display:block}
+.ibtn{width:36px;height:36px;border-radius:10px;border:0;background:transparent;display:inline-flex;align-items:center;justify-content:center;color:var(--ink2);transition:background .15s}
+.ibtn:hover{background:var(--fill2);color:var(--ink)}
+
+main{flex:1;padding-block:28px 64px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.view{display:flex;flex-direction:column;gap:24px;max-width:1240px;margin:0 auto;animation:in .45s var(--spring)}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.eyebrow{font-size:15px;font-weight:600;color:var(--tint);margin:0 0 2px}
+.large{font-size:40px;font-weight:700;letter-spacing:-.028em;line-height:1.08}
+.title2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.title3{font-size:17px;font-weight:600;letter-spacing:-.015em}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 18px;border-radius:999px;border:0;background:var(--tint);color:var(--on-tint);font-weight:600;font-size:15px;text-decoration:none;transition:background .2s,transform .25s var(--spring),opacity .2s}
+.btn:hover{background:var(--tint-hover)}
+.btn:active{transform:scale(.97)}
+.btn.gray{background:var(--fill);color:var(--ink)}
+.btn.gray:hover{background:color-mix(in srgb,var(--fill) 100%,var(--fill2))}
+.btn.tinted{background:var(--tint-soft);color:var(--tint)}
+.btn.tinted:hover{background:color-mix(in srgb,var(--tint-soft) 100%,var(--tint-soft))}
+.btn.orange{background:var(--orange-fill);color:#1D1300}
+.btn.orange:hover{filter:brightness(1.05)}
+.btn.sm{min-height:34px;padding:0 14px;font-size:14px}
+.btn.lg{min-height:50px;font-size:17px;border-radius:14px}
+.btn[aria-busy="true"]{pointer-events:none;opacity:.8}
+.spin{width:15px;height:15px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.seg{display:inline-flex;background:var(--fill);border-radius:10px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;min-height:32px;padding:0 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04);font-weight:600}
+
+.card{background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--shadow)}
+.pad{padding:20px 22px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--fill2);color:var(--ink2);white-space:nowrap}
+.chip.tint{background:var(--tint-soft);color:var(--tint)}
+.chip.orange{background:var(--orange-soft);color:var(--orange)}
+.chip.green{background:var(--green-soft);color:var(--green)}
+.chip.red{background:var(--red-soft);color:var(--red)}
+
+/* Monogramas estilo Contatos */
+.mono{flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:#fff;letter-spacing:0;background:linear-gradient(180deg,var(--a),var(--b));box-shadow:inset 0 .5px 0 rgba(255,255,255,.35)}
+.mono.sm{width:32px;height:32px;font-size:13px}
+.mono.xl{width:96px;height:96px;font-size:38px}
+.g1{--a:#A8B0BD;--b:#858D9A} .g2{--a:#5FD2C1;--b:#14A08F} .g3{--a:#FFB15E;--b:#F2862E} .g4{--a:#FF8FA3;--b:#F0607D} .g5{--a:#6FB8FF;--b:#3A8EE6} .g6{--a:#E2C26A;--b:#C29C34}
+
+/* Widgets do Hoje */
+.widgets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.widget{background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--shadow);padding:16px 18px;display:flex;flex-direction:column;gap:10px;text-decoration:none;color:inherit;transition:transform .3s var(--spring),box-shadow .3s}
+a.widget:hover{transform:translateY(-2px);box-shadow:var(--shadow-hi)}
+.widget .w-top{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2)}
+.widget .w-num{font-family:var(--font-d);font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.widget .w-sub{font-size:13px;color:var(--ink2)}
+
+/* Quadro */
+.board{display:grid;grid-template-columns:repeat(4,minmax(232px,1fr));gap:14px;overflow-x:auto;padding:2px 2px 8px}
+.col{border-radius:var(--r-xl);padding:10px;display:flex;flex-direction:column;gap:10px;min-height:380px;background:var(--fill2);transition:background .2s,box-shadow .2s}
+.col.over{background:var(--tint-soft);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--tint) 45%,transparent)}
+.col-h{display:flex;align-items:center;gap:8px;padding:6px 8px 2px;font-size:14px;font-weight:600}
+.col-h .dotc{width:8px;height:8px;border-radius:50%}
+.col-h .n{margin-left:auto;color:var(--ink3);font-weight:600}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:24px 16px;color:var(--ink3);font-size:14px;border-radius:var(--r-lg);border:1.5px dashed var(--sep)}
+.pet{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:10px;cursor:grab;transition:transform .35s var(--spring),box-shadow .3s}
+.pet:hover{transform:translateY(-2px);box-shadow:var(--shadow-hi)}
+.pet.dragging{opacity:.4;transform:scale(.98)}
+.pet .top{display:flex;align-items:center;gap:10px}
+.pet .nm{font-weight:600;font-size:16px;line-height:1.2}
+.pet .br{font-size:13px;color:var(--ink2)}
+.pet .tm{margin-left:auto;align-self:flex-start;font-size:13px;font-weight:600;color:var(--ink2)}
+.pet .svc{font-size:14px}
+.pet .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pet .note{font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.notice{border-radius:var(--r-md);background:var(--orange-soft);padding:12px;display:flex;flex-direction:column;gap:10px}
+.notice p{margin:0;font-size:14px;font-weight:500}
+.switchrow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.switch{position:relative;width:51px;height:31px;flex:0 0 auto}
+.switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.switch span{position:absolute;inset:0;border-radius:999px;background:var(--fill);transition:background .25s}
+.switch span::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);transition:transform .3s var(--spring)}
+.switch input:checked + span{background:var(--green-fill)}
+.switch input:checked + span::after{transform:translateX(20px)}
+.switch input:focus-visible + span{outline:3px solid color-mix(in srgb,var(--tint) 55%,transparent);outline-offset:2px}
+
+/* Lista agrupada (estilo Ajustes) */
+.glist{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden}
+.glist > .row{display:flex;align-items:center;gap:12px;min-height:52px;padding:10px 16px;position:relative}
+.glist > .row + .row::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--sep)}
+.glist > .row.ind + .row::before,.glist > .row + .row.ind::before{left:60px}
+.glist .grow{flex:1;min-width:0}
+.glist .val{color:var(--ink2);font-variant-numeric:tabular-nums}
+button.row{width:100%;border:0;background:transparent;text-align:left;transition:background .15s}
+button.row:hover{background:var(--fill2)}
+button.row[aria-current="true"]{background:var(--tint-soft)}
+.glabel{font-size:13px;font-weight:600;color:var(--ink2);margin:0 0 8px 16px}
+
+/* Sheet */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:fade .25s ease}
+.sheet{width:min(480px,100%);max-height:100%;overflow:auto;background:var(--bg);border-radius:26px;box-shadow:var(--sheet);padding:22px;display:flex;flex-direction:column;gap:18px;animation:pop .45s var(--spring)}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:scale(.94) translateY(12px)}}
+.sh-head{display:flex;align-items:center;gap:12px}
+.close{margin-left:auto;width:30px;height:30px;border-radius:50%;border:0;background:var(--fill);color:var(--ink2);display:flex;align-items:center;justify-content:center}
+.close .ic{width:14px;height:14px;stroke-width:2.6}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:600;color:var(--ink2);margin-left:4px}
+.input{min-height:46px;border:0;background:var(--surface);border-radius:var(--r-md);padding:0 14px;box-shadow:var(--shadow);font-size:16px}
+.input:focus{outline:none;box-shadow:0 0 0 3.5px color-mix(in srgb,var(--tint) 40%,transparent)}
+.input[aria-invalid="true"]{box-shadow:0 0 0 2px var(--red)}
+.err{font-size:13px;color:var(--red);font-weight:600;margin-left:4px}
+.help{font-size:13px;color:var(--ink2);margin-left:4px}
+.paygrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pay{min-height:72px;border-radius:var(--r-md);border:0;background:var(--surface);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;transition:box-shadow .2s,transform .25s var(--spring)}
+.pay:active{transform:scale(.97)}
+.pay[aria-pressed="true"]{box-shadow:0 0 0 2px var(--tint);color:var(--tint)}
+.total{font-family:var(--font-d);font-size:34px;font-weight:700;letter-spacing:-.03em}
+
+.toast{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;background:var(--glass);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);box-shadow:var(--shadow-hi),0 0 0 .5px var(--glass-line);font-size:14px;font-weight:600;animation:drop .5s var(--spring)}
+.toast .ok{width:22px;height:22px;border-radius:50%;background:var(--green-fill);color:#fff;display:flex;align-items:center;justify-content:center}
+.toast .ok .ic{width:13px;height:13px;stroke-width:3}
+.toast button{border:0;background:var(--fill);border-radius:999px;min-height:30px;padding:0 12px;font-weight:600;font-size:13px;color:var(--tint)}
+@keyframes drop{from{opacity:0;transform:translate(-50%,-14px) scale(.96)}}
+
+/* Agenda */
+.cal{display:grid;grid-template-columns:56px repeat(2,minmax(250px,1fr));gap:0 12px;overflow-x:auto}
+.cal .hd{display:flex;align-items:center;gap:10px;padding:0 4px 12px}
+.cal .hr{height:66px;font-size:12px;font-weight:600;color:var(--ink3);text-align:right;padding-right:8px;transform:translateY(-8px)}
+.lane{position:relative;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow);background-image:linear-gradient(var(--sep) .5px,transparent .5px);background-size:100% 66px}
+.ev{position:absolute;left:6px;right:6px;border-radius:10px;padding:7px 10px;font-size:13px;overflow:hidden;display:flex;flex-direction:column;border:0;text-align:left}
+.ev b{font-size:14px;font-weight:600}
+.ev.done{background:var(--fill2);color:var(--ink2)}
+.ev.now{background:var(--tint);color:var(--on-tint);box-shadow:0 6px 16px -6px color-mix(in srgb,var(--tint) 60%,transparent)}
+.ev.next{background:var(--tint-soft);color:var(--ink)}
+.ev.free{background:transparent;border:1.5px dashed var(--sep);color:var(--ink3);flex-direction:row;align-items:center;justify-content:center;gap:6px;font-weight:600;transition:all .2s}
+.ev.free:hover{border-color:var(--tint);color:var(--tint);background:var(--tint-soft)}
+.now-line{position:absolute;left:-6px;right:0;height:1.5px;background:var(--red);z-index:2}
+.now-line::before{content:"";position:absolute;left:0;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--red)}
+
+/* Pets */
+.split{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.split > .left{flex:1 1 280px;max-width:330px;display:flex;flex-direction:column;gap:12px}
+.split > .right{flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:28px 22px 22px}
+.hero h2{font-size:30px;font-weight:700;letter-spacing:-.025em}
+.quick{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.qbtn{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:84px;padding:10px 12px;border-radius:var(--r-md);border:0;background:var(--tint-soft);color:var(--tint);font-size:12px;font-weight:600;text-decoration:none;transition:transform .25s var(--spring)}
+.qbtn:active{transform:scale(.96)}
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ring{--p:0;width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--c,var(--tint)) calc(var(--p)*1%),var(--fill) 0);display:flex;align-items:center;justify-content:center}
+.ring::before{content:"";width:52px;height:52px;border-radius:50%;background:var(--surface);grid-area:1/1}
+.ring{display:grid;place-items:center}
+.ring span{grid-area:1/1;font-size:13px;font-weight:700}
+.stat{display:flex;align-items:center;gap:14px;padding:16px 18px}
+.stat .big{font-family:var(--font-d);font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+
+/* Mensagens */
+.inbox{display:flex;flex-wrap:wrap;gap:20px;align-items:stretch}
+.inbox .left{flex:1 1 280px;max-width:340px}
+.thread{display:flex;flex-direction:column;flex:999 1 480px;min-width:0;background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--shadow);overflow:hidden}
+.th-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:.5px solid var(--sep)}
+.th-body{display:flex;flex-direction:column;gap:6px;padding:20px 18px;flex:1}
+.stamp{align-self:center;font-size:12px;font-weight:600;color:var(--ink3);margin:4px 0 8px}
+.bub{max-width:min(420px,80%);padding:9px 14px;border-radius:20px;font-size:15px;line-height:1.35}
+.bub.out{align-self:flex-end;background:var(--tint);color:var(--on-tint);border-bottom-right-radius:6px}
+.bub.in{align-self:flex-start;background:var(--fill);border-bottom-left-radius:6px}
+.meta-out{align-self:flex-end;font-size:11px;color:var(--ink3);margin:-2px 6px 6px}
+.meta-in{align-self:flex-start;font-size:11px;color:var(--ink3);margin:-2px 6px 6px}
+.offer{margin:0 18px;border-radius:var(--r-lg);background:var(--bg);padding:14px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.offer .od{width:46px;height:50px;border-radius:10px;background:var(--surface);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
+.offer .od small{display:block;width:100%;text-align:center;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 0}
+.offer .od b{font-size:20px;line-height:1.2}
+.compose{display:flex;gap:8px;padding:12px 14px;border-top:.5px solid var(--sep)}
+.compose input{flex:1;min-width:0;min-height:38px;border-radius:999px;border:.5px solid var(--sep);background:var(--bg);padding:0 16px;font-size:15px}
+.compose input:focus{outline:none;box-shadow:0 0 0 3.5px color-mix(in srgb,var(--tint) 40%,transparent)}
+.send{width:38px;height:38px;border-radius:50%;border:0;background:var(--tint);color:var(--on-tint);display:flex;align-items:center;justify-content:center}
+
+/* Pacotes e caixa */
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.pkg{position:relative;overflow:hidden;border-radius:var(--r-xl);padding:20px;min-height:170px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;box-shadow:var(--shadow-hi)}
+.pkg.p1{background:linear-gradient(140deg,#14A08F,#0B6F64)}
+.pkg.p2{background:linear-gradient(140deg,#3A8EE6,#1F5FB0)}
+.pkg.p3{background:linear-gradient(140deg,#3A3A3C,#1C1C1E)}
+.pkg h3{font-size:17px;font-weight:600}
+.pkg .pr{font-family:var(--font-d);font-size:34px;font-weight:700;letter-spacing:-.03em}
+.pkg .ps{font-size:13px;opacity:.85}
+.pkg::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
+.bigsum{font-family:var(--font-d);font-size:64px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.bars{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;background:var(--fill)}
+.legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.legend div{display:flex;flex-direction:column;gap:2px}
+.legend span{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);font-weight:500}
+.legend i{width:8px;height:8px;border-radius:2px;display:block}
+.legend b{font-size:17px;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+
+@media (max-width:1100px){ .widgets{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:900px){
+  .app{flex-direction:column}
+  .side{position:static;height:auto;flex:none;flex-direction:row;flex-wrap:wrap;gap:4px;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));border-right:0;border-bottom:.5px solid var(--glass-line)}
+  .app-id{width:100%;padding:4px 4px 8px}
+  .side .group,.side .foot{display:none}
+  .toolbar,main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .large{font-size:32px}
+  .trio,.legend{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bigsum{font-size:46px}
+  .paygrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:520px){ .widgets,.trio{grid-template-columns:minmax(0,1fr)} .split > .left,.inbox .left{max-width:none} .wa{display:none} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-transparency:reduce){.side,.toolbar,.toast{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--surface)}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.05Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></symbol>
+  <symbol id="i-scis" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></symbol>
+  <symbol id="i-ready" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></symbol>
+  <symbol id="i-pix" viewBox="0 0 24 24"><path d="m12 3 4 4-4 4-4-4z"/><path d="m12 13 4 4-4 4-4-4z"/><path d="m3 12 4-4 4 4-4 4z"/><path d="m13 12 4-4 4 4-4 4z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+</svg>
+
+<div class="app">
+  <nav class="side" aria-label="Menu principal">
+    <div class="app-id"><span class="app-icon"><svg class="ic lg" aria-hidden="true"><use href="#i-paw"/></svg></span><div><b>Banho e Tosa</b><span>Recepção</span></div></div>
+    <a href="#hoje" data-route="hoje"><span class="tile t-orange"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg></span>Hoje</a>
+    <a href="#agenda" data-route="agenda"><span class="tile t-red"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg></span>Agenda</a>
+    <a href="#mensagens" data-route="mensagens"><span class="tile t-green"><svg class="ic" aria-hidden="true"><use href="#i-msg"/></svg></span>Mensagens<span class="count hot" id="msgBadge"></span></a>
+    <div class="group">Clientes</div>
+    <a href="#pets" data-route="pets"><span class="tile t-blue"><svg class="ic" aria-hidden="true"><use href="#i-paw"/></svg></span>Pets e tutores<span class="count">214</span></a>
+    <a href="#pacotes" data-route="pacotes"><span class="tile t-pink"><svg class="ic" aria-hidden="true"><use href="#i-gift"/></svg></span>Pacotes e pontos</a>
+    <div class="group">Loja</div>
+    <a href="#caixa" data-route="caixa"><span class="tile t-teal"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg></span>Caixa</a>
+    <div class="foot">Protótipo com dados de exemplo</div>
+  </nav>
+  <div class="work">
+    <header class="toolbar">
+      <span class="crumb" id="crumb">Hoje</span>
+      <form class="search" role="search" data-form="search"><svg class="ic sm" aria-hidden="true"><use href="#i-search"/></svg><label for="q" class="sr">Buscar pet, tutor ou telefone</label><input id="q" placeholder="Buscar" autocomplete="off"></form>
+      <span class="wa"><i aria-hidden="true"></i>WhatsApp</span>
+      <button class="ibtn" data-act="new" aria-label="Novo agendamento"><svg class="ic lg" aria-hidden="true"><use href="#i-plus"/></svg></button>
+    </header>
+    <main id="main" tabindex="-1"></main>
+  </div>
+</div>
+<div id="overlay"></div>
+<div id="toastHost" aria-live="polite"></div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const brl = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ic = (n, cls = '') => `<svg class="ic ${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const first = n => n.split(' ')[0];
+const mono = (ini, g, cls = '') => `<span class="mono ${g} ${cls}" aria-hidden="true">${ini}</span>`;
+
+const STAGES = [
+  { id: 'chegando', name: 'Chegando', color: 'var(--ink3)', verb: '', icon: 'in', empty: 'Ninguém chegando agora.' },
+  { id: 'banho', name: 'No banho', color: '#30A6C7', verb: 'Começar banho', icon: 'drop', empty: 'Banheira livre. Arraste um pet para cá.' },
+  { id: 'tosa', name: 'Na tosa', color: '#FF9500', verb: 'Levar para tosa', icon: 'scis', empty: 'Mesa de tosa livre.' },
+  { id: 'pronto', name: 'Pronto para buscar', color: '#34C759', verb: 'Marcar como pronto', icon: 'ready', empty: 'Nenhum pet esperando o tutor.' }
+];
+
+const S = {
+  pets: [
+    { id: 'thor', ini: 'T', g: 'g2', name: 'Thor', breed: 'Shih-tzu', age: '4 anos', size: 'Pequeno', tutor: 'Ana Souza', phone: '(11) 9xxxx-0000', time: '10:00', svc: 'Banho + tosa higiênica', price: 85, stage: 'banho', note: 'Sensível nas orelhas', pkg: { used: 3, total: 4 }, points: 340, cycle: 15, last: 14, care: ['Sensível nas orelhas', 'Secador no morno', 'Gosta de petisco de frango'], hist: [['4 nov', 'Banho + tosa higiênica', 'Pacote', 'Júlia'], ['20 out', 'Banho', 'Pacote', 'Júlia'], ['6 out', 'Banho + hidratação', 110, 'Júlia'], ['21 set', 'Tosa da raça', 120, 'Marcos']] },
+    { id: 'pipoca', ini: 'P', g: 'g4', name: 'Pipoca', breed: 'Poodle', age: '7 anos', size: 'Pequeno', tutor: 'Beatriz Lima', phone: '(11) 9xxxx-0001', time: '09:30', svc: 'Tosa na tesoura', price: 120, stage: 'tosa', note: 'Com Marcos, faltam ~25 min', points: 820, cycle: 30, last: 32, care: ['Idosa, fazer pausas na tosa'], hist: [['17 out', 'Tosa na tesoura', 120, 'Marcos'], ['16 set', 'Tosa na tesoura', 120, 'Marcos']] },
+    { id: 'bob', ini: 'B', g: 'g3', name: 'Bob', breed: 'Spitz alemão', age: '2 anos', size: 'Pequeno', tutor: 'Carla Mendes', phone: '(11) 9xxxx-0002', time: '11:00', svc: 'Banho + hidratação', price: 110, stage: 'chegando', note: 'Late no secador', pkg: { used: 3, total: 4 }, points: 150, cycle: 14, last: 14, care: ['Late no secador, começar com toalha'], hist: [['4 nov', 'Banho', 'Pacote', 'Júlia']] },
+    { id: 'nina', ini: 'N', g: 'g5', name: 'Nina', breed: 'Yorkshire', age: '3 anos', size: 'Mini', tutor: 'Rafael Costa', phone: '(11) 9xxxx-0003', time: '11:30', svc: 'Banho + tosa bebê', price: 95, stage: 'chegando', note: 'Primeira vez na loja', points: 0, cycle: 15, last: 0, care: [], hist: [] },
+    { id: 'luna', ini: 'L', g: 'g6', name: 'Luna', breed: 'Sem raça definida', age: '5 anos', size: 'Médio', tutor: 'Juliana Rocha', phone: '(11) 9xxxx-0004', time: '09:00', svc: 'Banho', price: 70, stage: 'pronto', note: 'Tutora avisada às 10:12', points: 260, cycle: 21, last: 21, care: ['Medrosa com barulho'], hist: [['28 out', 'Banho', 70, 'Júlia']] },
+    { id: 'mel', ini: 'M', g: 'g3', name: 'Mel', breed: 'Golden retriever', age: '6 anos', size: 'Grande', tutor: 'Pedro Alves', phone: '(11) 9xxxx-0005', time: '08:30', svc: 'Banho + escovação', price: 130, stage: 'pronto', note: 'Tutor avisado às 10:05', points: 610, cycle: 15, last: 15, care: ['Solta muito pelo, escovar antes'], hist: [['3 nov', 'Banho + escovação', 130, 'Júlia']], paid: true }
+  ],
+  back: [['F', 'g2'], ['Z', 'g3'], ['K', 'g5'], ['A', 'g4'], ['D', 'g6'], ['S', 'g2'], ['R', 'g1']],
+  threads: [
+    { id: 'ana', who: 'Ana Souza', pet: 'Thor', g: 'g2', ini: 'AS', when: '10:31', unread: true, offer: { day: 'QUI', date: '20', text: 'Ana aceitou quinta às 10:00', svc: 'Banho + tosa higiênica, pelo pacote', state: 'open' },
+      msgs: [['out', 'Oi Ana! O Thor já está no ponto do banho Temos quinta às 10h, pode ser?', '09:00, automática'], ['in', 'Pode sim! Deixo ele lá às 10h', '10:31']] },
+    { id: 'sonia', who: 'Sônia Prado', pet: 'Kiara', g: 'g5', ini: 'SP', when: '10:12', unread: true, offer: { day: 'SÁB', date: '22', text: 'Sônia pediu outro horário', svc: 'Prefere sábado de manhã', state: 'other' },
+      msgs: [['out', 'Oi Sônia! A Kiara está há 3 semanas sem banho. Temos sexta às 14h, pode ser?', '09:00, automática'], ['in', 'Sexta não consigo, tem sábado cedo?', '10:12']] },
+    { id: 'pedro', who: 'Pedro Alves', pet: 'Mel', g: 'g3', ini: 'PA', when: '10:05', unread: false, msgs: [['out', 'Oi Pedro! A Mel está pronta e cheirosa. Pode vir buscar quando quiser.', '10:05, automática'], ['in', 'Obrigado! Passo às 11h', '10:07']] },
+    { id: 'carla', who: 'Carla Mendes', pet: 'Bob', g: 'g4', ini: 'CM', when: 'Ontem', unread: false, msgs: [['out', 'Oi Carla! Confirmando o banho do Bob amanhã às 11h. Responda SIM para confirmar.', 'ontem 18:00, automática'], ['in', 'SIM', 'ontem 18:20']] }
+  ],
+  packages: [
+    { name: '4 banhos no mês', price: 260, desc: 'Porte pequeno, validade de 35 dias', active: 18, cls: 'p1' },
+    { name: '2 banhos e 1 tosa', price: 290, desc: 'Tosa higiênica ou bebê, 45 dias', active: 9, cls: 'p2' },
+    { name: '4 banhos, porte grande', price: 420, desc: 'Inclui escovação, 35 dias', active: 6, cls: 'p3' }
+  ],
+  ending: [
+    { pet: 'Fred', tutor: 'Marta Reis', until: 'vence 28 nov', g: 'g2', ini: 'F', sent: false },
+    { pet: 'Bob', tutor: 'Carla Mendes', until: 'vence 2 dez', g: 'g3', ini: 'B', sent: false },
+    { pet: 'Thor', tutor: 'Ana Souza', until: 'vence 5 dez', g: 'g2', ini: 'T', sent: false }
+  ],
+  sales: [
+    { pet: 'Mel', svc: 'Banho + escovação', pay: 'Pix', v: 130, t: '10:40' }, { pet: 'Duque', svc: 'Pacote 4 banhos no mês', pay: 'Crédito', v: 260, t: '10:12' },
+    { pet: 'Raja', svc: 'Tosa da raça', pay: 'Pix', v: 140, t: '09:51' }, { pet: 'Simba', svc: 'Banho', pay: 'Dinheiro', v: 70, t: '09:20' },
+    { pet: 'Amora', svc: 'Banho + hidratação', pay: 'Débito', v: 110, t: '08:55' }, { pet: 'Zeca', svc: 'Banho', pay: 'Pacote', v: 0, t: '08:30' }
+  ],
+  view: 'quadro', drawer: '', selPet: 'thor', selThread: 'ana', ask: null, cashClosed: false, filter: '', lastFocus: null, notify: true
+};
+
+/* utilidades */
+let toastTimer;
+function toast(msg, undo) {
+  $('#toastHost').innerHTML = `<div class="toast" role="status"><span class="ok">${ic('check')}</span><span>${esc(msg)}</span>${undo ? `<button data-act="undo">Desfazer</button>` : '<span style="width:8px"></span>'}</div>`;
+  S.undo = undo || null;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('#toastHost').innerHTML = ''; S.undo = null; }, undo ? 5000 : 3200);
+}
+function busy(btn, label, done) { btn.setAttribute('aria-busy', 'true'); btn.innerHTML = `<span class="spin" aria-hidden="true"></span>${label}`; setTimeout(done, 650); }
+const pet = id => S.pets.find(p => p.id === id);
+const stageIdx = id => STAGES.findIndex(s => s.id === id);
+
+/* Hoje */
+function viewHoje() {
+  const working = S.pets.filter(p => p.stage === 'banho' || p.stage === 'tosa').length;
+  const toPay = S.pets.filter(p => p.stage === 'pronto' && !p.paid);
+  const unread = S.threads.filter(t => t.unread).length;
+  const income = S.sales.reduce((a, s) => a + s.v, 0);
+  const cols = STAGES.map((st, i) => {
+    const items = S.pets.filter(p => p.stage === st.id);
+    return `<section class="col" data-stage="${st.id}" aria-labelledby="c-${st.id}">
+      <div class="col-h" id="c-${st.id}"><span class="dotc" style="background:${st.color}"></span>${st.name}<span class="n num">${items.length}</span></div>
+      ${items.length ? items.map(p => petCard(p, i)).join('') : `<div class="empty">${ic(st.icon, 'lg')}<span>${st.empty}</span></div>`}
+    </section>`;
+  }).join('');
+  return `<div class="view">
+    <div class="head">
+      <div><p class="eyebrow">Quarta, 18 de novembro</p><h1 class="large">Bom dia, Renata</h1></div>
+      <div class="actions"><div class="seg" role="group" aria-label="Modo de exibição"><button aria-pressed="true">Quadro</button><button data-act="goagenda">Linha do tempo</button></div><button class="btn" data-act="new">${ic('plus')}Agendar</button></div>
+    </div>
+    <div class="widgets">
+      <div class="widget"><div class="w-top"><span class="tile t-teal">${ic('drop')}</span>Em atendimento</div><div class="w-num num">${working}</div><div class="w-sub">de 12 pets agendados hoje</div></div>
+      <div class="widget"><div class="w-top"><span class="tile t-orange">${ic('wallet')}</span>Para receber</div><div class="w-num num">${toPay.length}</div><div class="w-sub">${toPay.length ? toPay.map(p => p.name).join(' e ') + ' já estão prontos' : 'Tudo recebido até agora'}</div></div>
+      <a class="widget" href="#mensagens"><div class="w-top"><span class="tile t-green">${ic('msg')}</span>Respostas no WhatsApp</div><div class="w-num num">${unread}</div><div class="w-sub">Tutores aceitando horários</div></a>
+      <a class="widget" href="#caixa"><div class="w-top"><span class="tile t-blue">${ic('cash')}</span>Recebido hoje</div><div class="w-num num">${brl(income).replace(',00', '')}</div><div class="w-sub">${S.sales.length} pagamentos</div></a>
+    </div>
+    <div class="board">${cols}</div>
+    <div class="card pad" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px">
+      <span class="tile t-pink" style="width:44px;height:44px;border-radius:12px">${ic('bell', 'lg')}</span>
+      <div style="flex:1 1 280px"><h2 class="title3">7 pets no ponto de voltar</h2><p class="cap" style="margin:2px 0 0">O lembrete sai amanhã às 9h no WhatsApp, já com uma sugestão de horário.</p></div>
+      <div style="display:flex;padding-left:8px">${S.back.map(([i, g]) => `<span style="margin-left:-8px;border-radius:50%;box-shadow:0 0 0 2.5px var(--surface)">${mono(i, g, 'sm')}</span>`).join('')}</div>
+      <a class="btn tinted" href="#mensagens">Revisar</a>
+    </div>
+  </div>`;
+}
+function petCard(p, i) {
+  const next = STAGES[i + 1];
+  let foot = '';
+  if (S.ask === p.id) {
+    foot = `<div class="notice" role="group" aria-label="Avisar tutor"><p>${esc(p.name)} terminou. Avisar ${esc(first(p.tutor))}?</p>
+      <div class="switchrow"><span style="font-size:14px">Mensagem no WhatsApp</span><label class="switch"><input type="checkbox" id="sw-${p.id}" ${S.notify ? 'checked' : ''} data-act="toggle" aria-label="Enviar mensagem no WhatsApp"><span></span></label></div>
+      <button class="btn orange sm" data-act="notify" data-id="${p.id}">Concluir</button></div>`;
+  } else if (p.stage === 'pronto') {
+    foot = p.paid ? `<div class="meta"><span class="chip green">${ic('check', 'sm')}Pago</span></div>` : `<button class="btn orange sm" data-act="pay" data-id="${p.id}">Receber ${brl(p.pkg ? 0 : p.price)}</button>`;
+  } else if (next) {
+    foot = `<button class="btn gray sm" data-act="move" data-id="${p.id}" data-to="${next.id}">${ic(next.icon, 'sm')}${next.verb}</button>`;
+  }
+  return `<article class="pet" draggable="true" data-id="${p.id}" aria-label="${esc(p.name)}, ${esc(p.svc)}">
+    <div class="top">${mono(p.ini, p.g)}<div style="min-width:0"><div class="nm">${esc(p.name)}</div><div class="br">${esc(p.breed)}</div></div><span class="tm num">${p.time}</span></div>
+    <div class="svc">${esc(p.svc)}</div>
+    <div class="meta"><span class="note">${esc(p.note)}</span>${p.pkg ? `<span class="chip tint">Pacote ${p.pkg.used}/${p.pkg.total}</span>` : ''}</div>
+    ${foot}
+  </article>`;
+}
+function moveTo(id, stage, silent) {
+  const p = pet(id); if (!p || p.stage === stage) return;
+  const prev = p.stage; p.stage = stage;
+  if (stage === 'pronto' && !silent) S.ask = id; else if (S.ask === id) S.ask = null;
+  render();
+  if (!silent) toast(`${p.name} em “${STAGES[stageIdx(stage)].name}”`, () => { S.ask = null; moveTo(id, prev, true); });
+}
+
+/* Agenda */
+function viewAgenda() {
+  const hours = ['8h', '9h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h'];
+  const H = 66, y = t => (t - 8) * H;
+  const lanes = [
+    ['Júlia', 'Banho', 'g6', 'JU', [[8.5, 1, 'Mel', 'Banho + escovação', 'done'], [9.5, 1, 'Luna', 'Banho', 'done'], [10.5, 1, 'Thor', 'Banho + tosa higiênica', 'now'], [11.5, 1, 'Bob', 'Banho + hidratação', 'next'], [12.5, 1.5, '', '12:30', 'free'], [14, 1, 'Fred', 'Banho', 'next'], [15, 2, '', '15:00', 'free']]],
+    ['Marcos', 'Tosa', 'g1', 'MA', [[9.5, 1.5, 'Pipoca', 'Tosa na tesoura', 'now'], [11.5, 1, 'Nina', 'Banho + tosa bebê', 'next'], [13, 1, '', '13:00', 'free'], [14, 1.5, 'Zeca', 'Tosa da raça', 'next'], [16, 1, 'Simba', 'Tosa higiênica', 'next']]]
+  ];
+  const days = [['SEG', 16], ['TER', 17], ['QUA', 18], ['QUI', 19], ['SEX', 20], ['SÁB', 21]];
+  return `<div class="view">
+    <div class="head"><div><p class="eyebrow">Novembro de 2026</p><h1 class="large">Agenda</h1></div>
+      <div class="actions"><div class="seg" role="group" aria-label="Período"><button aria-pressed="true">Dia</button><button>Semana</button></div><button class="btn" data-act="new">${ic('plus')}Agendar</button></div></div>
+    <div class="card" style="display:flex;align-items:center;gap:6px;padding:8px">
+      <button class="ibtn" aria-label="Semana anterior">${ic('left')}</button>
+      <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;flex:1">${days.map(([d, n]) => `<button class="btn ${n === 18 ? '' : 'gray'}" style="flex-direction:column;gap:0;min-height:54px;border-radius:14px;${n === 18 ? '' : 'background:transparent'}" ${n === 18 ? 'aria-current="date"' : ''}><span style="font-size:11px;font-weight:600;opacity:.8">${d}</span><span class="num" style="font-size:18px">${n}</span></button>`).join('')}</div>
+      <button class="ibtn" aria-label="Próxima semana">${ic('chev')}</button>
+    </div>
+    <div class="scroll"><div class="cal">
+      <div></div>${lanes.map(([w, r, g, ini]) => `<div class="hd">${mono(ini, g, 'sm')}<div><b style="font-size:15px">${w}</b><div class="cap">${r}</div></div></div>`).join('')}
+      <div style="grid-row:2 / span ${hours.length};padding-top:0">${hours.map(h => `<div class="hr">${h}</div>`).join('')}</div>
+      ${lanes.map(([w, r, g, ini, sl]) => `<div class="lane" style="grid-row:2 / span ${hours.length};height:${hours.length * H}px">
+        ${sl.map(([t, d, n, s, c]) => c === 'free'
+          ? `<button class="ev free" style="top:${y(t) + 3}px;height:${d * H - 6}px" data-act="new" data-slot="${s} com ${w}">${ic('plus', 'sm')}Livre às ${s}</button>`
+          : `<div class="ev ${c}" style="top:${y(t) + 3}px;height:${d * H - 6}px"><b>${n}</b><span>${s}</span></div>`).join('')}
+        <div class="now-line" style="top:${y(10.67)}px" aria-hidden="true"></div></div>`).join('')}
+    </div></div>
+  </div>`;
+}
+
+/* Pets */
+function viewPets() {
+  const f = S.filter.toLowerCase();
+  const shown = S.pets.filter(x => !f || (x.name + ' ' + x.tutor + ' ' + x.phone).toLowerCase().includes(f));
+  if (shown.length && !shown.find(x => x.id === S.selPet)) S.selPet = shown[0].id;
+  const p = pet(S.selPet);
+  const list = shown.length ? `<div class="glist">${shown.map(x => `<button class="row ind" data-act="selpet" data-id="${x.id}" aria-current="${x.id === p.id}">${mono(x.ini, x.g, 'sm')}<span class="grow"><b style="font-weight:600">${esc(x.name)}</b><br><span class="cap">${esc(x.tutor)}</span></span>${ic('chev', 'sm')}</button>`).join('')}</div>`
+    : `<div class="empty" style="min-height:180px;background:var(--surface)">${ic('search', 'lg')}<span>Nenhum pet ou tutor com “${esc(S.filter)}”.</span><button class="btn sm" data-act="newpet">${ic('plus', 'sm')}Cadastrar pet</button></div>`;
+  const goal = 500, left = Math.max(goal - p.points, 0);
+  const pkLeft = p.pkg ? p.pkg.total - p.pkg.used : 0;
+  const dueIn = p.cycle - p.last;
+  const hist = p.hist.length ? `<div class="glist">${p.hist.map(([d, s, v, w]) => `<div class="row"><span class="cap num" style="width:52px">${d}</span><span class="grow">${esc(s)}<br><span class="cap">com ${w}</span></span>${typeof v === 'number' ? `<span class="val">${brl(v)}</span>` : `<span class="chip tint">${v}</span>`}</div>`).join('')}</div>`
+    : `<div class="empty" style="background:var(--surface)">Ainda sem atendimentos. O primeiro aparece aqui assim que for pago.</div>`;
+  return `<div class="view">
+    <div class="head"><h1 class="large">Pets e tutores</h1><button class="btn" data-act="newpet">${ic('plus')}Cadastrar pet</button></div>
+    <div class="split">
+      <div class="left"><div class="field"><label for="busca">Filtrar</label><input class="input" id="busca" value="${esc(S.filter)}" placeholder="Pet, tutor ou telefone" autocomplete="off"></div>${list}</div>
+      <div class="right">
+        <div class="card hero">
+          ${mono(p.ini, p.g, 'xl')}
+          <h2>${esc(p.name)}</h2>
+          <p class="muted" style="margin:0">${esc(p.breed)}, ${p.age}, porte ${p.size.toLowerCase()}</p>
+          <div class="quick"><a class="qbtn" href="#mensagens">${ic('msg', 'lg')}Mensagem</a><button class="qbtn" data-act="new">${ic('cal', 'lg')}Agendar</button><button class="qbtn" data-act="pay" data-id="${p.id}">${ic('wallet', 'lg')}Receber</button></div>
+        </div>
+        <div class="trio">
+          <div class="card stat"><div class="ring" style="--p:${Math.min(p.last / p.cycle, 1) * 100};--c:${dueIn <= 1 ? 'var(--orange-fill)' : 'var(--tint)'}"><span class="num">${p.last}d</span></div><div><div class="cap">Último banho</div><div class="big">${dueIn <= 0 ? 'Hora de voltar' : dueIn === 1 ? 'Volta amanhã' : `Volta em ${dueIn} dias`}</div><div class="cap">Ciclo de ${p.cycle} dias</div></div></div>
+          <div class="card stat"><div class="ring" style="--p:${p.pkg ? pkLeft / p.pkg.total * 100 : 0};--c:${pkLeft <= 1 ? 'var(--orange-fill)' : 'var(--tint)'}"><span class="num">${p.pkg ? `${pkLeft}/${p.pkg.total}` : '–'}</span></div><div><div class="cap">Pacote</div><div class="big">${p.pkg ? (pkLeft === 1 ? '1 banho restante' : `${pkLeft} banhos`) : 'Sem pacote'}</div><div class="cap">${p.pkg ? 'Vence em 5 de dezembro' : 'Ofereça 4 banhos no mês'}</div></div></div>
+          <div class="card stat"><div class="ring" style="--p:${Math.min(p.points / goal, 1) * 100}"><span class="num">${Math.round(Math.min(p.points / goal, 1) * 100)}%</span></div><div><div class="cap">Pontos</div><div class="big num">${p.points}</div><div class="cap">${left ? `Faltam ${left} para hidratação` : 'Hidratação grátis liberada'}</div></div></div>
+        </div>
+        <div><p class="glabel">Tutor</p><div class="glist"><div class="row"><span class="grow">Nome</span><span class="val">${esc(p.tutor)}</span></div><div class="row"><span class="grow">WhatsApp</span><span class="val">${p.phone}</span></div><div class="row"><span class="grow">Lembretes automáticos</span><label class="switch"><input type="checkbox" checked aria-label="Lembretes automáticos para ${esc(p.tutor)}"><span></span></label></div></div></div>
+        <div><p class="glabel">Cuidados</p><div class="card pad" style="display:flex;flex-wrap:wrap;gap:8px">${p.care.length ? p.care.map(c => `<span class="chip orange">${ic('alert', 'sm')}${esc(c)}</span>`).join('') : '<span class="muted">Nada anotado. Escreva aqui o que a equipe precisa saber antes do banho.</span>'}</div></div>
+        <div><p class="glabel">Atendimentos</p>${hist}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* Mensagens */
+function viewMensagens() {
+  const t = S.threads.find(x => x.id === S.selThread);
+  const list = `<div class="glist">${S.threads.map(x => `<button class="row ind" data-act="selthread" data-id="${x.id}" aria-current="${x.id === t.id}">${mono(x.ini, x.g)}<span class="grow"><span style="display:flex;justify-content:space-between;gap:8px"><b style="font-weight:600">${esc(x.who)}</b><span class="cap num">${x.when}</span></span><span class="cap" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.msgs[x.msgs.length - 1][1])}</span></span>${x.unread ? '<span style="width:9px;height:9px;border-radius:50%;background:var(--tint);flex:0 0 auto"></span><span class="sr">Não lida</span>' : ''}</button>`).join('')}</div>`;
+  let offer = '';
+  if (t.offer) {
+    const o = t.offer;
+    offer = o.state === 'done'
+      ? `<div class="offer"><span class="tile t-green" style="width:40px;height:40px;border-radius:50%">${ic('check', 'lg')}</span><div style="flex:1"><b>${esc(t.pet)} agendado para quinta às 10:00</b><div class="cap">Confirmação enviada para ${esc(first(t.who))}</div></div></div>`
+      : `<div class="offer"><div class="od"><small>${o.day}</small><b class="num">${o.date}</b></div><div style="flex:1 1 200px"><b>${esc(o.text)}</b><div class="cap">${esc(o.svc)}</div></div><div class="actions">${o.state === 'open' ? `<button class="btn" data-act="confirm" data-id="${t.id}">Confirmar</button>` : ''}<button class="btn gray" data-act="new">Outro horário</button></div></div>`;
+  }
+  return `<div class="view">
+    <div class="head"><div><p class="eyebrow">WhatsApp conectado</p><h1 class="large">Mensagens</h1></div><button class="btn tinted">${ic('bell')}Lembretes de amanhã (7)</button></div>
+    <div class="inbox"><div class="left">${list}</div>
+      <section class="thread" aria-label="Conversa com ${esc(t.who)}">
+        <div class="th-head">${mono(t.ini, t.g)}<div><b>${esc(t.who)}</b><div class="cap">Tutora de ${esc(t.pet)}</div></div><a class="btn gray sm" href="#pets" style="margin-left:auto">Ver ficha</a></div>
+        <div class="th-body"><span class="stamp">Hoje</span>${t.msgs.map(([d, m, w]) => `<div class="bub ${d}">${esc(m)}</div><span class="meta-${d}">${w}</span>`).join('')}</div>
+        ${offer}
+        <form class="compose" data-form="send" novalidate style="margin-top:14px"><label for="msg" class="sr">Mensagem para ${esc(first(t.who))}</label><input id="msg" placeholder="Mensagem" autocomplete="off"><button class="send" aria-label="Enviar">${ic('send')}</button></form>
+      </section></div>
+  </div>`;
+}
+
+/* Pacotes */
+function viewPacotes() {
+  return `<div class="view">
+    <div class="head"><h1 class="large">Pacotes e pontos</h1><button class="btn">${ic('plus')}Criar pacote</button></div>
+    <div class="grid3">${S.packages.map(k => `<div class="pkg ${k.cls}"><div><h3>${k.name}</h3><div class="ps">${k.desc}</div></div><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px"><span class="pr num">${brl(k.price).replace(',00', '')}</span><span class="ps">${k.active} ativos</span></div></div>`).join('')}</div>
+    <div><p class="glabel">Acabando, com 1 banho restante</p><div class="glist">${S.ending.map((e, i) => `<div class="row ind">${mono(e.ini, e.g, 'sm')}<span class="grow"><b style="font-weight:600">${e.pet}</b><br><span class="cap">${e.tutor}, ${e.until}</span></span>${e.sent ? `<span class="chip green">${ic('check', 'sm')}Avisado</span>` : `<button class="btn tinted sm" data-act="warnpkg" data-i="${i}">Avisar no WhatsApp</button>`}</div>`).join('')}</div></div>
+    <div><p class="glabel">Pontos: cada R$ 1 pago vira 1 ponto</p><div class="glist">
+      <div class="row ind"><span class="tile t-orange">${ic('star')}</span><span class="grow">Perfume e laço de brinde</span><span class="val">300 pontos</span></div>
+      <div class="row ind"><span class="tile t-teal">${ic('drop')}</span><span class="grow">Hidratação grátis</span><span class="val">500 pontos</span></div>
+      <div class="row ind"><span class="tile t-pink">${ic('sparkle')}</span><span class="grow">Banho grátis</span><span class="val">800 pontos</span></div>
+    </div></div>
+  </div>`;
+}
+
+/* Caixa */
+const PAY = { Pix: ['pix', '#30A6C7'], Crédito: ['card', '#007AFF'], Débito: ['card', '#FF9500'], Dinheiro: ['cash', '#34C759'] };
+function viewCaixa() {
+  const by = { Pix: 0, Crédito: 0, Débito: 0, Dinheiro: 0 };
+  S.sales.forEach(s => { if (by[s.pay] !== undefined) by[s.pay] += s.v; });
+  const total = Object.values(by).reduce((a, b) => a + b, 0);
+  const closed = S.cashClosed;
+  return `<div class="view">
+    <div class="head"><div><p class="eyebrow">Quarta, 18 de novembro</p><h1 class="large">Caixa</h1></div>${closed ? `<span class="chip green" style="font-size:14px;padding:6px 12px">${ic('check', 'sm')}Fechado às 18:04</span>` : ''}</div>
+    <div class="card pad" style="display:flex;flex-direction:column;gap:18px">
+      <div><div class="cap" style="font-weight:600">Recebido hoje</div><div class="bigsum num">${brl(total)}</div></div>
+      <div class="bars" role="img" aria-label="Divisão por forma de pagamento">${Object.entries(by).filter(([, v]) => v).map(([k, v]) => `<span style="width:${v / total * 100}%;background:${PAY[k][1]}"></span>`).join('')}</div>
+      <div class="legend">${Object.entries(by).map(([k, v]) => `<div><span><i style="background:${PAY[k][1]}"></i>${k}</span><b>${brl(v)}</b></div>`).join('')}</div>
+    </div>
+    <div class="split">
+      <div style="flex:999 1 460px;min-width:0"><p class="glabel">Pagamentos</p><div class="glist">${S.sales.map(s => `<div class="row"><span class="cap num" style="width:44px">${s.t}</span><span class="grow"><b style="font-weight:600">${s.pet}</b><br><span class="cap">${s.svc}</span></span><span class="cap">${s.pay}</span><span class="val" style="min-width:86px;text-align:right">${brl(s.v)}</span></div>`).join('')}</div></div>
+      <form data-form="cash" novalidate style="flex:1 1 300px;display:flex;flex-direction:column;gap:12px"><p class="glabel" style="margin-bottom:-4px">Conferir a gaveta</p>
+        <div class="glist"><div class="row"><span class="grow">Esperado em dinheiro</span><span class="val">${brl(by.Dinheiro)}</span></div><div class="row"><label for="gaveta" class="grow">Contado na gaveta</label><input id="gaveta" class="num" inputmode="decimal" placeholder="0,00" style="border:0;background:transparent;text-align:right;width:110px;font-size:16px" ${closed ? 'disabled' : ''}></div><div class="row" id="gavetaRow"><span class="grow">Diferença</span><span id="gavetaRes" class="val" aria-live="polite">–</span></div></div>
+        <button class="btn lg" ${closed ? 'disabled' : ''}>${closed ? 'Caixa fechado' : 'Fechar caixa'}</button>
+        <span class="help" style="text-align:center">O resumo vai para o WhatsApp da dona da loja.</span>
+      </form>
+    </div>
+  </div>`;
+}
+
+/* Sheets */
+function sheetHtml() {
+  if (S.drawer.startsWith('pay:')) {
+    const p = pet(S.drawer.slice(4));
+    const usePkg = !!p.pkg && p.pkg.used < p.pkg.total, base = usePkg ? 0 : p.price;
+    return `<div class="scrim" data-scrim><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="st">
+      <div class="sh-head">${mono(p.ini, p.g)}<div><h2 id="st" class="title3">Receber de ${esc(first(p.tutor))}</h2><div class="cap">${esc(p.name)}, ${esc(p.svc)}</div></div><button class="close" data-act="close" aria-label="Fechar">${ic('x')}</button></div>
+      <div style="text-align:center;padding:6px 0"><div class="cap">Total</div><div class="total num">${brl(base)}</div><div class="cap">${base ? `${p.name} ganha ${base} pontos` : 'Banho do pacote, sem cobrança'}</div></div>
+      <div class="glist">
+        ${p.pkg ? `<div class="row"><span class="grow">Usar banho do pacote<br><span class="cap">Restam ${p.pkg.total - p.pkg.used} de ${p.pkg.total}</span></span><label class="switch"><input type="checkbox" id="usepkg" ${usePkg ? 'checked' : 'disabled'} aria-label="Usar banho do pacote"><span></span></label></div>` : ''}
+        <div class="row"><span class="grow">Trocar 500 pontos<br><span class="cap">Hidratação grátis, tem ${p.points}</span></span><label class="switch"><input type="checkbox" id="usepts" ${p.points >= 500 ? '' : 'disabled'} aria-label="Trocar pontos"><span></span></label></div>
+      </div>
+      ${base ? `<div role="group" aria-label="Forma de pagamento"><div class="paygrid">${Object.keys(PAY).map((f, i) => `<button class="pay" data-act="paymethod" aria-pressed="${i === 0}">${ic(PAY[f][0], 'lg')}${f}</button>`).join('')}</div></div>` : ''}
+      <button class="btn lg" data-act="confirmpay" data-id="${p.id}">${base ? `Receber ${brl(base)}` : 'Confirmar uso do pacote'}</button>
+    </div></div>`;
+  }
+  if (S.drawer === 'new') {
+    return `<div class="scrim" data-scrim><form class="sheet" role="dialog" aria-modal="true" aria-labelledby="nt" data-form="new" novalidate>
+      <div class="sh-head"><h2 id="nt" class="title2">Novo agendamento</h2><button type="button" class="close" data-act="close" aria-label="Fechar">${ic('x')}</button></div>
+      <div class="field"><label for="f-pet">Pet</label><select class="input" id="f-pet"><option value="">Escolha o pet</option>${S.pets.map(p => `<option>${p.name}, ${p.tutor}</option>`).join('')}</select><span class="err" id="f-pet-err" hidden>Escolha o pet para agendar.</span></div>
+      <div class="field"><label for="f-svc">Serviço</label><select class="input" id="f-svc"><option>Banho</option><option>Banho + tosa higiênica</option><option>Banho + hidratação</option><option>Tosa na tesoura</option><option>Tosa da raça</option></select><span class="help">A duração sai do serviço e do porte do pet.</span></div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><div class="field"><label for="f-dia">Dia</label><input class="input" id="f-dia" type="date" value="2026-11-20"></div>
+      <div class="field"><label for="f-hora">Horário livre</label><select class="input" id="f-hora">${['12:30 com Júlia', '13:00 com Marcos', '15:00 com Júlia'].map(h => `<option ${S.slot === h ? 'selected' : ''}>${h}</option>`).join('')}</select></div></div>
+      <div class="glist"><div class="row"><span class="grow">Confirmar pelo WhatsApp</span><label class="switch"><input type="checkbox" id="f-wa" checked aria-label="Confirmar pelo WhatsApp"><span></span></label></div></div>
+      <button class="btn lg">Agendar</button>
+    </form></div>`;
+  }
+  return '';
+}
+function openSheet(kind, from) { S.lastFocus = from || document.activeElement; S.drawer = kind; render(); const d = $('.sheet'); const f = d && d.querySelector('select, input:not([disabled]), button.pay, button.btn'); f && f.focus(); }
+function closeSheet() { S.drawer = ''; render(); const lf = S.lastFocus; if (lf && document.body.contains(lf)) lf.focus(); }
+
+/* roteamento */
+const VIEWS = { hoje: [viewHoje, 'Hoje'], agenda: [viewAgenda, 'Agenda'], pets: [viewPets, 'Pets e tutores'], mensagens: [viewMensagens, 'Mensagens'], pacotes: [viewPacotes, 'Pacotes e pontos'], caixa: [viewCaixa, 'Caixa'] };
+const route = () => { const h = location.hash.slice(1); return VIEWS[h] ? h : 'hoje'; };
+function render() {
+  const r = route();
+  $('#main').innerHTML = VIEWS[r][0]();
+  $('#crumb').textContent = VIEWS[r][1];
+  document.querySelectorAll('.side a').forEach(a => { if (a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  const unread = S.threads.filter(t => t.unread).length;
+  const b = $('#msgBadge'); b.textContent = unread; b.hidden = !unread; b.setAttribute('aria-label', `${unread} não lidas`);
+  $('#overlay').innerHTML = sheetHtml();
+  if (r === 'hoje') wireDnD();
+  if (r === 'caixa') wireCash();
+  if (r === 'pets') wireFilter();
+}
+window.addEventListener('hashchange', () => { render(); $('#main').focus({ preventScroll: true }); window.scrollTo(0, 0); });
+
+function wireDnD() {
+  document.querySelectorAll('.pet').forEach(c => {
+    c.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', c.dataset.id); c.classList.add('dragging'); });
+    c.addEventListener('dragend', () => c.classList.remove('dragging'));
+  });
+  document.querySelectorAll('.col').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('over'); });
+    col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) col.classList.remove('over'); });
+    col.addEventListener('drop', e => { e.preventDefault(); col.classList.remove('over'); moveTo(e.dataTransfer.getData('text/plain'), col.dataset.stage); });
+  });
+}
+function wireCash() {
+  const inp = $('#gaveta'); if (!inp) return;
+  inp.addEventListener('input', () => {
+    const exp = S.sales.filter(s => s.pay === 'Dinheiro').reduce((a, s) => a + s.v, 0);
+    const v = parseFloat(inp.value.replace(/\./g, '').replace(',', '.'));
+    const out = $('#gavetaRes');
+    if (isNaN(v)) { out.innerHTML = '–'; return; }
+    const d = Math.round((v - exp) * 100) / 100;
+    out.innerHTML = d === 0 ? `<span class="chip green">${ic('check', 'sm')}Confere</span>` : d > 0 ? `<span class="chip orange">Sobram ${brl(d)}</span>` : `<span class="chip red">Faltam ${brl(-d)}</span>`;
+  });
+}
+function wireFilter() {
+  const inp = $('#busca'); if (!inp) return;
+  inp.addEventListener('input', () => { S.filter = inp.value; const pos = inp.selectionStart; render(); const n = $('#busca'); n.focus(); n.setSelectionRange(pos, pos); });
+}
+
+document.addEventListener('click', e => {
+  if (e.target.matches('[data-scrim]')) { closeSheet(); return; }
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const a = el.dataset.act, id = el.dataset.id;
+  if (a === 'close') closeSheet();
+  else if (a === 'toggle') S.notify = el.checked;
+  else if (a === 'undo') { const u = S.undo; $('#toastHost').innerHTML = ''; S.undo = null; u && u(); }
+  else if (a === 'goagenda') location.hash = 'agenda';
+  else if (a === 'move') moveTo(id, el.dataset.to);
+  else if (a === 'notify') {
+    const p = pet(id);
+    if (!S.notify) { S.ask = null; p.note = 'Tutor não avisado'; S.notify = true; render(); return; }
+    busy(el, 'Enviando', () => { S.ask = null; p.note = 'Tutor avisado agora'; render(); toast(`Mensagem enviada para ${first(p.tutor)}`); });
+  }
+  else if (a === 'pay') openSheet('pay:' + id, el);
+  else if (a === 'paymethod') { e.preventDefault(); el.parentElement.querySelectorAll('.pay').forEach(b => b.setAttribute('aria-pressed', b === el)); }
+  else if (a === 'confirmpay') busy(el, 'Registrando', () => {
+    const p = pet(id); const usePkg = $('#usepkg')?.checked; const m = $('.pay[aria-pressed="true"]'); const method = m ? m.textContent.trim() : 'Pacote';
+    p.paid = true; if (usePkg && p.pkg) p.pkg.used++; if (!usePkg) p.points += p.price;
+    S.sales.unshift({ pet: p.name, svc: p.svc, pay: usePkg ? 'Pacote' : method, v: usePkg ? 0 : p.price, t: '10:45' });
+    closeSheet(); toast(usePkg ? `Banho do pacote usado, ${p.name}` : `Recebido de ${first(p.tutor)}`);
+  });
+  else if (a === 'new') { S.slot = el.dataset.slot || ''; openSheet('new', el); }
+  else if (a === 'newpet') toast('O cadastro de pet entra na próxima versão');
+  else if (a === 'selpet') { S.selPet = id; render(); }
+  else if (a === 'selthread') { S.selThread = id; S.threads.find(x => x.id === id).unread = false; render(); }
+  else if (a === 'confirm') busy(el, 'Confirmando', () => { const t = S.threads.find(x => x.id === id); t.offer.state = 'done'; t.unread = false; t.msgs.push(['out', 'Agendado! Thor na quinta, 20/11, às 10h. Até lá!', 'agora, automática']); render(); toast('Agendamento confirmado'); });
+  else if (a === 'warnpkg') busy(el, 'Enviando', () => { S.ending[+el.dataset.i].sent = true; render(); toast('Aviso de renovação enviado'); });
+});
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target.dataset.form;
+  if (f === 'new') {
+    const sel = $('#f-pet'), err = $('#f-pet-err');
+    if (!sel.value) { sel.setAttribute('aria-invalid', 'true'); sel.setAttribute('aria-describedby', 'f-pet-err'); err.hidden = false; sel.focus(); return; }
+    const txt = `${sel.value.split(',')[0]} agendado, ${$('#f-hora').value}`; closeSheet(); toast(txt);
+  }
+  if (f === 'send') { const inp = $('#msg'); if (!inp.value.trim()) { inp.focus(); return; } const t = S.threads.find(x => x.id === S.selThread); t.msgs.push(['out', inp.value.trim(), 'agora']); render(); $('#msg').focus(); }
+  if (f === 'cash') { const btn = e.target.querySelector('button'); busy(btn, 'Fechando', () => { S.cashClosed = true; render(); toast('Caixa fechado e resumo enviado'); }); }
+  if (f === 'search') { S.filter = $('#q').value.trim(); if (route() === 'pets') render(); else location.hash = 'pets'; }
+});
+document.addEventListener('keydown', e => {
+  if (!S.drawer) return;
+  if (e.key === 'Escape') { closeSheet(); return; }
+  if (e.key === 'Tab') {
+    const items = [...$('.sheet').querySelectorAll('button:not([disabled]), input:not([disabled]), select')];
+    const i = items.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); items[items.length - 1].focus(); }
+    else if (!e.shiftKey && i === items.length - 1) { e.preventDefault(); items[0].focus(); }
+  }
+});
+render();
+</script>
