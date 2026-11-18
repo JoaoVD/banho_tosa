@@ -1,5 +1,5 @@
 import type { LinhaImport } from '@/domain/import';
-import { atSP } from '@/domain/time';
+import { addDaysKey, atSP, dayKeySP } from '@/domain/time';
 import type { Tx } from '../session';
 import { upsertTutor } from './tutores';
 
@@ -36,6 +36,22 @@ export async function commitImport(tx: Tx, lojaId: string, linhas: LinhaImport[]
           values (${lojaId}, ${pet.id}, ${servico.id}, ${preco}, 'concluido', ${inicio}, ${new Date(inicio.getTime() + 3_600_000)}, true)`;
         r.historicos++;
       }
+    }
+    if (l.pacote && l.pacoteSaldo && padrao) {
+      const [modelo] = await tx`select id, banhos, servico_id, porte, validade_dias from pacotes_modelo
+        where loja_id = ${lojaId} and lower(nome) = lower(${l.pacote}) limit 1`;
+      const validade = l.pacoteValidade ?? addDaysKey(dayKeySP(new Date()), modelo?.validade_dias ?? 35);
+      const [ja] = await tx`select 1 from pacotes_cliente where tutor_id = ${tutor.id} and lower(nome) = lower(${l.pacote}) and saldo = ${l.pacoteSaldo} and valido_ate = ${validade}::date`;
+      if (!ja) {
+        await tx`insert into pacotes_cliente (loja_id, tutor_id, modelo_id, nome, servico_id, porte, total, saldo, valido_ate)
+          values (${lojaId}, ${tutor.id}, ${modelo?.id ?? null}, ${l.pacote}, ${modelo?.servico_id ?? padrao.id}, ${modelo?.porte ?? null},
+                  ${Math.max(modelo?.banhos ?? l.pacoteSaldo, l.pacoteSaldo)}, ${l.pacoteSaldo}, ${validade}::date)`;
+        r.pacotes++;
+      }
+    }
+    if (l.pontos) {
+      const [ja] = await tx`select 1 from movimentos_pontos where tutor_id = ${tutor.id} and motivo = 'Importação'`;
+      if (!ja) await tx`insert into movimentos_pontos (loja_id, tutor_id, delta, motivo) values (${lojaId}, ${tutor.id}, ${l.pontos}, 'Importação')`;
     }
   }
   return r;

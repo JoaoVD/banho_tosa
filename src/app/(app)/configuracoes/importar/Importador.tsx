@@ -28,7 +28,8 @@ export function Importador() {
         <span className="tile t-green" style={{ width: 44, height: 44, borderRadius: 12 }}><Icon name="check" size="lg" /></span>
         <h2 className="title2">Importação concluída</h2>
         <p style={{ margin: 0 }}>{`${plural(resultado.tutores, 'tutor', 'tutores')}, ${plural(resultado.pets, 'pet', 'pets')} e ${plural(resultado.historicos, 'última visita', 'últimas visitas')}`}</p>
-        <p className="cap" style={{ margin: 0 }}>Quem já estava cadastrado com o mesmo telefone não foi duplicado. Pacotes e pontos da planilha entram quando o módulo de caixa estiver ativo.</p>
+        {resultado.pacotes > 0 && <p style={{ margin: 0 }}>{`${plural(resultado.pacotes, 'pacote em aberto', 'pacotes em aberto')}`}</p>}
+        <p className="cap" style={{ margin: 0 }}>Quem já estava cadastrado com o mesmo telefone não foi duplicado.</p>
         <Link className="btn" href="/pets">Ver pets e tutores</Link>
       </div>
     );

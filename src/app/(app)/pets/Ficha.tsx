@@ -3,6 +3,7 @@ import type { Atendimento, PetFicha } from '@/db/repos/pets';
 import { formatBRL } from '@/domain/money';
 import { Aneis, type CicloView, type PacoteView } from './Aneis';
 import { ReceberAtalho } from './ReceberAtalho';
+import { VenderAtalho } from './VenderAtalho';
 import { formatPhoneBR } from '@/domain/phone';
 import { PORTE_LABEL } from '@/domain/types';
 import { EmptyState, GroupList } from '@/ui/bits';
@@ -26,6 +27,7 @@ export function Ficha({ ficha, ciclo, historico, pacote = null, pontos = 0, rece
           <Link className={s.qbtn} href="/mensagens"><Icon name="msg" size="lg" />Mensagem</Link>
           <Link className={s.qbtn} href={`/agenda?novo=1&pet=${ficha.id}`}><Icon name="cal" size="lg" />Agendar</Link>
           {receberId && <ReceberAtalho agendamentoId={receberId} />}
+          <VenderAtalho tutorId={ficha.tutor.id} tutorNome={ficha.tutor.nome} />
         </div>
       </div>
       <Aneis petId={ficha.id} ciclo={ciclo} pacote={pacote} pontos={pontos} />

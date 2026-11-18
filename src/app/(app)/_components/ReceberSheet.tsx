@@ -10,6 +10,7 @@ import { Sheet } from '@/ui/Sheet';
 import { Switch } from '@/ui/Switch';
 import { useToast } from '@/ui/Toast';
 import { prepararRecebimento, receberAction } from './receber-actions';
+import { VenderPacoteSheet } from './VenderPacoteSheet';
 import s from './receber.module.css';
 
 type Forma = 'pix' | 'credito' | 'debito' | 'dinheiro';
@@ -31,6 +32,7 @@ export function ReceberSheet({ agendamentoId, onClose, onDone }: { agendamentoId
   const [erro, setErro] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [key] = useState(() => crypto.randomUUID());
+  const [vender, setVender] = useState(false);
 
   useEffect(() => { prepararRecebimento(incluidos).then(setPrev); }, [incluidos]);
 
@@ -105,6 +107,9 @@ export function ReceberSheet({ agendamentoId, onClose, onDone }: { agendamentoId
               <label className="row" key={o.agendamentoId}><span className="grow">{`Incluir ${o.petNome}`}<br /><span className="cap">{`Também está pronto, ${formatBRL(o.valorCentavos)}`}</span></span>
                 <input type="checkbox" checked={incluidos.includes(o.agendamentoId)} onChange={(e) => setIncluidos((l) => (e.target.checked ? [...l, o.agendamentoId] : l.filter((x) => x !== o.agendamentoId)))} /></label>
             ))}
+            {!prev.pacoteUsavel && (
+              <button type="button" className="row" onClick={() => setVender(true)}><span className="grow" style={{ color: 'var(--tint)', fontWeight: 600 }}>Vender pacote</span><Icon name="chev" size="sm" /></button>
+            )}
             <div className="row"><span className="grow">Ajustar preço</span><Switch label="Ajustar preço" checked={ajuste.aberto} onChange={(v) => setAjuste((a) => ({ ...a, aberto: v }))} /></div>
           </div>
           {ajuste.aberto && (
@@ -126,6 +131,10 @@ export function ReceberSheet({ agendamentoId, onClose, onDone }: { agendamentoId
           <Button size="lg" busy={pending} busyLabel="Registrando" onClick={confirmar}>
             {conta.total ? `Receber ${formatBRL(conta.total)}` : 'Confirmar uso do pacote'}
           </Button>
+          {vender && (
+            <VenderPacoteSheet tutorId={prev.tutor.id} tutorNome={prev.tutor.nome} onClose={() => setVender(false)}
+              onDone={() => prepararRecebimento(incluidos).then((p) => { setPrev(p); setUsarPacote(true); })} />
+          )}
         </>
       )}
     </Sheet>
