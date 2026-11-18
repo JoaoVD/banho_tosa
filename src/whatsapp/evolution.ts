@@ -21,7 +21,7 @@ export class EvolutionProvider implements WhatsAppProvider {
       ...init,
       headers: { apikey: this.cfg.apiKey, 'Content-Type': 'application/json' },
     });
-    if (!res.ok) throw new Error(`Evolution API respondeu ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    if (!res.ok) throw Object.assign(new Error(`Evolution API respondeu ${res.status}: ${(await res.text()).slice(0, 200)}`), { status: res.status });
     return obj(await res.json());
   }
 
@@ -34,7 +34,19 @@ export class EvolutionProvider implements WhatsAppProvider {
   }
 
   async connection(): Promise<Conexao> {
-    const r = await this.call(`/instance/connectionState/${this.cfg.instance}`);
+    let r: Json;
+    try {
+      r = await this.call(`/instance/connectionState/${this.cfg.instance}`);
+    } catch (e) {
+      if ((e as { status?: number }).status !== 404) throw e;
+      // Primeira vez: cria a instância e já devolve o QR code.
+      const c = await this.call('/instance/create', {
+        method: 'POST',
+        body: JSON.stringify({ instanceName: this.cfg.instance, integration: 'WHATSAPP-BAILEYS', qrcode: true }),
+      });
+      const b64 = obj(c.qrcode).base64;
+      return { state: 'close', qrCodeDataUrl: typeof b64 === 'string' ? b64 : undefined };
+    }
     const state = String(obj(r.instance).state ?? 'close') as Conexao['state'];
     if (state === 'open') return { state };
     const qr = await this.call(`/instance/connect/${this.cfg.instance}`);

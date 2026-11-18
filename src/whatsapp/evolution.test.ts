@@ -54,3 +54,13 @@ test('estado da conexão e QR code', async () => {
     .mockResolvedValueOnce(new Response(JSON.stringify({ base64: 'data:image/png;base64,AAAA' }))));
   expect(await evo.connection()).toEqual({ state: 'close', qrCodeDataUrl: 'data:image/png;base64,AAAA' });
 });
+
+test('cria a instância quando ela ainda não existe e devolve o QR', async () => {
+  vi.stubGlobal('fetch', vi.fn()
+    .mockResolvedValueOnce(new Response('{"status":404}', { status: 404 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ instance: { instanceName: 'banho-e-tosa' }, qrcode: { base64: 'data:image/png;base64,QR' } }), { status: 201 })));
+  expect(await evo.connection()).toEqual({ state: 'close', qrCodeDataUrl: 'data:image/png;base64,QR' });
+  const [url, init] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[1];
+  expect(url).toBe('https://evo.exemplo.dev/instance/create');
+  expect(JSON.parse(init.body)).toEqual({ instanceName: 'banho-e-tosa', integration: 'WHATSAPP-BAILEYS', qrcode: true });
+});
