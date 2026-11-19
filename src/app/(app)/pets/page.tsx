@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
     };
   });
   return (
-    <PetsLayout pets={pets} q={q} selecionado={ficha?.id}>
+    <PetsLayout tela="lista" pets={pets} q={q} selecionado={ficha?.id}>
       {ficha && ciclo && <Ficha ficha={ficha} ciclo={ciclo} historico={historico} pacote={fid?.pacote ?? null} pontos={fid?.pontos ?? 0} receberId={receberId} />}
     </PetsLayout>
   );

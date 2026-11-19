@@ -7,10 +7,14 @@ import { Mono, gradientFor, initials } from '@/ui/Mono';
 import { Filtro } from './Filtro';
 import s from './pets.module.css';
 
-export function PetsLayout({ pets, q, selecionado, children }: { pets: PetListItem[]; q: string; selecionado?: string; children?: ReactNode }) {
+/** tela: no celular, a lista (/pets) e a ficha (/pets/[id]) aparecem uma de cada vez. */
+export function PetsLayout({ pets, q, selecionado, tela, children }: { pets: PetListItem[]; q: string; selecionado?: string; tela: 'lista' | 'ficha'; children?: ReactNode }) {
   return (
-    <div className="view">
-      <PageHead title="Pets e tutores" actions={<Link className="btn" href="/pets/novo"><Icon name="plus" />Cadastrar pet</Link>} />
+    <div className="view" data-tela={tela}>
+      {tela === 'ficha' && (
+        <Link className={`so-celular ${s.voltar}`} href={q ? `/pets?q=${encodeURIComponent(q)}` : '/pets'}><Icon name="left" />Pets</Link>
+      )}
+      <div className={s.cabeca}><PageHead title="Pets e tutores" actions={<Link className="btn" href="/pets/novo"><Icon name="plus" />Cadastrar pet</Link>} /></div>
       <div className={s.split}>
         <div className={s.left}>
           <Filtro q={q} />

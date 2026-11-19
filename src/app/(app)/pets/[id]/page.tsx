@@ -21,7 +21,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const fid = ficha ? await withSession(user, (tx) => fidelidadeDoTutor(tx, ficha.tutor.id, dayKeySP(agora()))) : null;
   if (!ficha || !ciclo) notFound();
   return (
-    <PetsLayout pets={pets} q={q} selecionado={id}>
+    <PetsLayout tela="ficha" pets={pets} q={q} selecionado={id}>
       <Ficha ficha={ficha} ciclo={ciclo} historico={historico} pacote={fid?.pacote ?? null} pontos={fid?.pontos ?? 0} receberId={receberId} />
     </PetsLayout>
   );
