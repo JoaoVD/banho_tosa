@@ -5,6 +5,7 @@ import { totalNaoLidas } from '@/db/repos/mensagens';
 import { getProvider } from '@/whatsapp/provider';
 import { sairAction } from '@/app/entrar/actions';
 import { Sidebar } from '@/ui/Sidebar';
+import { TabBar } from '@/ui/TabBar';
 import { Toolbar } from '@/ui/Toolbar';
 import { ToastProvider } from '@/ui/Toast';
 
@@ -27,6 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Toolbar whatsappOk={whatsappOk} />
           <main className="content" id="conteudo" tabIndex={-1}>{children}</main>
         </div>
+        <TabBar papel={user.papel} nomeLoja={loja?.nome ?? 'Banho e Tosa'} naoLidas={naoLidas} whatsappOk={whatsappOk} sair={sairAction} />
       </div>
     </ToastProvider>
   );

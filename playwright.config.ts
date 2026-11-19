@@ -9,7 +9,11 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   globalSetup: './tests/e2e/global-setup.ts',
   use: { baseURL: 'http://localhost:3000', trace: 'off', locale: 'pt-BR', timezoneId: 'America/Sao_Paulo' },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } }],
+  projects: [
+    { name: 'chromium', testIgnore: /celular\//, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
+    // Celular: perfil de iPhone, mas no Chromium (o navegador instalado).
+    { name: 'celular', testMatch: /celular\/.*\.spec\.ts/, use: { ...devices['iPhone 13'], browserName: 'chromium' } },
+  ],
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000/entrar',

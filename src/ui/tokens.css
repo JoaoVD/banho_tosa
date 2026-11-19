@@ -171,13 +171,42 @@ textarea.input { padding: 12px 14px; min-height: 110px; resize: vertical; }
 .ring span { grid-area: 1/1; font-size: 13px; font-weight: 700; }
 
 @media (max-width: 1100px) { .widgets { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 900px) {
-  .app { flex-direction: column; }
-  .side { position: static; height: auto; flex: none; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px)); border-right: 0; border-bottom: .5px solid var(--glass-line); }
-  .app-id { width: 100%; padding: 4px 4px 8px; }
-  .side .group, .side .foot { display: none; }
+/* Barra de abas (celular) — escondida no PC */
+.tabbar, .tb-buscar { display: none; }
+.so-celular { display: none !important; }
+
+@media (max-width: 899px) {
+  .side { display: none; }
   .toolbar, main.content { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  main.content { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
   .large { font-size: 32px; }
+  .toolbar { gap: 4px; }
+  .toolbar .crumb { margin-right: auto; font-size: 17px; }
+  .toolbar .search { display: none; }
+  .toolbar.buscando .search { display: block; flex: 1 1 auto; margin-left: 0; }
+  .toolbar.buscando .crumb, .toolbar.buscando .tb-novo, .toolbar.buscando .wa { display: none; }
+  .tb-buscar { display: inline-flex; }
+  .toolbar .ibtn { width: 44px; height: 44px; color: var(--tint); }
+  .search input { font-size: 16px; min-height: 40px; }
+  .wa { display: none; }
+  .tabbar { position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 4px max(8px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+    background: var(--glass); backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px); border-top: .5px solid var(--glass-line); }
+  .tabbar a, .tabbar button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; border: 0; background: none; padding: 0;
+    color: var(--ink3); text-decoration: none; font-size: 11px; font-weight: 600; -webkit-tap-highlight-color: transparent; }
+  .tabbar [aria-current="page"] { color: var(--tint); }
+  .tabbar a:active, .tabbar button:active { opacity: .6; }
+  .tb-ic { position: relative; display: flex; }
+  .tb-badge { position: absolute; top: -5px; left: 15px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--orange-fill); color: #1D1300; font-size: 11px; line-height: 18px; text-align: center; }
+  .tb-off { position: absolute; top: -2px; right: -4px; width: 9px; height: 9px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 2px var(--surface); }
+  .mais-id { padding: 0 4px; }
+  .mais-sair { width: 100%; min-height: 48px; }
+  .glist .row { min-height: 52px; }
+}
+@media (max-width: 899px) and (hover: none) { body:has(input:focus, textarea:focus) .tabbar { display: none; } }
+@media (max-width: 699px) {
+  .so-celular { display: revert !important; }
+  .so-pc { display: none !important; }
 }
 @media (max-width: 520px) { .widgets { grid-template-columns: minmax(0, 1fr); } .wa { display: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
