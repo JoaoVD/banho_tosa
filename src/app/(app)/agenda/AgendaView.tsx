@@ -40,6 +40,8 @@ export function AgendaView(props: {
   const pathname = usePathname();
   const [novo, setNovo] = useState<{ open: boolean; hora?: string }>({ open: props.abrirNovo });
   const [selecionado, setSelecionado] = useState<Bloco | null>(null);
+  // Celular: um profissional por vez.
+  const [prof, setProf] = useState(props.profissionais[0]?.id ?? '');
   const [ano, mes] = props.dia.split('-').map(Number);
   const exp = props.expediente ?? { abre: '08:00', fecha: '18:00' };
   const abre = atSP(props.dia, exp.abre).getTime();
@@ -79,7 +81,24 @@ export function AgendaView(props: {
       </nav>
 
       {props.modo === 'semana' && props.resumo ? (
-        <div className="card pad" style={{ overflowX: 'auto' }}>
+        <>
+        <ul className={`so-celular ${s.semanaLista}`} aria-label="Semana">
+          {props.semana.map((d) => (
+            <li key={d} className="card">
+              <Link className={s.semanaDia} href={url({ dia: d, modo: 'dia' })}>{DIAS[new Date(`${d}T12:00:00Z`).getUTCDay()]} {d.slice(8)}/{d.slice(5, 7)}<Icon name="chev" size="sm" /></Link>
+              {props.profissionais.map((p) => {
+                const r = props.resumo![d]?.[p.id];
+                return (
+                  <div key={p.id} className={s.semanaLinha}>
+                    <span>{p.nome}</span>
+                    <span className="cap num">{`${r?.total ?? 0} atend. · ${r?.primeiroLivre ? `livre às ${hhmmSP(new Date(r.primeiroLivre))}` : 'lotado'}`}</span>
+                  </div>
+                );
+              })}
+            </li>
+          ))}
+        </ul>
+        <div className="card pad so-pc" style={{ overflowX: 'auto' }}>
           <table className={s.table}>
             <thead><tr><th>Dia</th>{props.profissionais.map((p) => <th key={p.id}>{p.nome}</th>)}</tr></thead>
             <tbody>
@@ -95,21 +114,28 @@ export function AgendaView(props: {
             </tbody>
           </table>
         </div>
+        </>
       ) : !props.expediente ? (
         <div className="card pad"><p className="muted" style={{ margin: 0 }}>A loja não abre neste dia. Ajuste em Configurações › Horário de funcionamento.</p></div>
       ) : (
+        <>
+        {props.profissionais.length > 1 && (
+          <div className="so-celular">
+            <Segmented label="Profissional" value={prof} onChange={setProf} options={props.profissionais.map((p) => ({ value: p.id, label: p.nome }))} />
+          </div>
+        )}
         <div className={s.scroll}>
           <div className={s.cal} style={{ gridTemplateColumns: `56px repeat(${props.profissionais.length}, minmax(250px, 1fr))` }}>
             <div />
             {props.profissionais.map((p) => (
-              <div className={s.hd} key={p.id}>
+              <div className={s.hd} key={p.id} data-ativa={p.id === prof}>
                 <Mono initials={initials(p.nome, 2)} gradient={gradientFor(p.id)} size="sm" />
                 <div><b>{p.nome}</b><div className="cap">{p.funcao === 'banho' ? 'Banho' : 'Tosa'}</div></div>
               </div>
             ))}
             <div>{horas.map((h) => <div className={s.hr} key={h}>{h}</div>)}</div>
             {props.profissionais.map((p) => (
-              <section key={p.id} className={s.lane} style={{ height: horas.length * H }} aria-label={`${p.nome}, ${p.funcao}`}>
+              <section key={p.id} className={s.lane} data-ativa={p.id === prof} style={{ height: horas.length * H }} aria-label={`${p.nome}, ${p.funcao}`}>
                 {props.blocos.filter((b) => b.profissionalId === p.id).map((b) => (
                   <button key={b.id} type="button" className={`${s.ev} ${s[estado(b, agora)]}`} style={{ top: y(b.inicio) + 3, height: Math.max(y(b.fim) - y(b.inicio) - 6, 24) }} onClick={() => setSelecionado(b)}>
                     <b>{b.petNome}</b><span>{`${hhmmSP(new Date(b.inicio))}, ${b.servicoNome}`}</span>
@@ -130,6 +156,7 @@ export function AgendaView(props: {
             ))}
           </div>
         </div>
+        </>
       )}
 
       <NovoAgendamentoSheet

@@ -30,3 +30,17 @@
 .table th, .table td { text-align: left; padding: 10px 8px; border-top: .5px solid var(--sep); white-space: nowrap; }
 .table thead th { border-top: 0; color: var(--ink2); font-size: 13px; }
 .table a { color: var(--tint); text-decoration: none; font-weight: 600; }
+
+.semanaLista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.semanaLista > li { padding: 4px 16px 10px; }
+.semanaDia { display: flex; align-items: center; justify-content: space-between; min-height: 44px; font-weight: 600; color: var(--tint); text-decoration: none; }
+.semanaLinha { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: .5px solid var(--sep); font-size: 15px; }
+@media (max-width: 699px) {
+  .cal { grid-template-columns: 40px minmax(0, 1fr) !important; gap: 0 8px; }
+  .cal [data-ativa="false"] { display: none; }
+  .scroll { overflow: visible; }
+  .week { padding: 6px 4px; gap: 2px; }
+  .week :global(.ibtn) { width: 36px; min-height: 44px; flex: 0 0 auto; }
+  .days { gap: 2px; }
+  .day b { font-size: 16px; }
+}

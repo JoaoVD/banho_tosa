@@ -4,7 +4,7 @@ import { entrar, violacoesGraves } from '../helpers';
 const ROTAS = ['/hoje', '/agenda', '/agenda?modo=semana', '/mensagens', '/pets', '/pets/novo', '/pacotes', '/caixa',
   '/configuracoes/loja', '/configuracoes/servicos', '/configuracoes/importar', '/configuracoes/mensagens'];
 // Telas ainda não adaptadas: liberadas tarefa a tarefa do plano.
-const PENDENTES = new Set<string>(['/agenda', '/agenda?modo=semana', '/mensagens', '/pets']);
+const PENDENTES = new Set<string>(['/mensagens', '/pets']);
 
 for (const largura of [390, 820]) {
   test.describe(`${largura}px`, () => {
