@@ -10,6 +10,7 @@ import { Button } from '@/ui/Button';
 import { Chip, EmptyState } from '@/ui/bits';
 import { Icon, type IconName } from '@/ui/icons';
 import { Mono, gradientFor, initials } from '@/ui/Mono';
+import { Segmented } from '@/ui/Segmented';
 import { Switch } from '@/ui/Switch';
 import { useToast } from '@/ui/Toast';
 import { concluirAvisoAction, moverAction } from './actions';
@@ -23,6 +24,8 @@ const VAZIO: Record<BoardStage, [IconName, string]> = {
   tosa: ['scis', 'Mesa de tosa livre.'],
   pronto: ['ready', 'Nenhum pet esperando o tutor.'],
 };
+/** Rótulos curtos para o seletor do celular. */
+const ETAPA_CURTA: Record<BoardStage, string> = { chegando: 'Chegando', banho: 'No banho', tosa: 'Na tosa', pronto: 'Pronto' };
 const ICONE: Record<'banho' | 'tosa' | 'pronto', IconName> = { banho: 'drop', tosa: 'scis', pronto: 'ready' };
 
 export function Quadro({ colunas }: { colunas: Record<BoardStage, CardPet[]> }) {
@@ -33,6 +36,8 @@ export function Quadro({ colunas }: { colunas: Record<BoardStage, CardPet[]> }) 
   const [aviso, setAviso] = useState('');
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const todos = Object.values(colunas).flat();
+  // Celular: uma etapa por vez, começando na primeira que tem pets.
+  const [etapa, setEtapa] = useState<BoardStage>(() => BOARD_STAGES.find((st) => colunas[st].length) ?? 'chegando');
 
   function mover(card: CardPet, para: BoardStage) {
     const atual = BOARD_STAGES.find((st) => colunas[st].some((c) => c.agendamentoId === card.agendamentoId));
@@ -79,9 +84,13 @@ export function Quadro({ colunas }: { colunas: Record<BoardStage, CardPet[]> }) 
   return (
     <DndContext sensors={sensors} onDragEnd={onDragEnd}>
       <p className="sr-only" aria-live="assertive">{aviso}</p>
+      <div className={`so-celular ${s.etapas}`}>
+        <Segmented label="Etapa" value={etapa} onChange={setEtapa}
+          options={BOARD_STAGES.map((st) => ({ value: st, label: `${ETAPA_CURTA[st]} ${colunas[st].length}` }))} />
+      </div>
       <div className={s.board}>
         {BOARD_STAGES.map((st, i) => (
-          <Coluna key={st} stage={st} cards={colunas[st]} alvoTeclado={pegando?.alvo === i}>
+          <Coluna key={st} stage={st} cards={colunas[st]} alvoTeclado={pegando?.alvo === i} ativa={st === etapa}>
             {colunas[st].map((c) => (
               <Cartao key={c.agendamentoId} card={c} stage={st} pegando={pegando?.id === c.agendamentoId} onMover={(p) => mover(c, p)} onKey={teclado(c, i)} />
             ))}
@@ -92,11 +101,11 @@ export function Quadro({ colunas }: { colunas: Record<BoardStage, CardPet[]> }) 
   );
 }
 
-function Coluna({ stage, cards, alvoTeclado, children }: { stage: BoardStage; cards: CardPet[]; alvoTeclado: boolean; children: React.ReactNode }) {
+function Coluna({ stage, cards, alvoTeclado, ativa, children }: { stage: BoardStage; cards: CardPet[]; alvoTeclado: boolean; ativa: boolean; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   const [icone, texto] = VAZIO[stage];
   return (
-    <section ref={setNodeRef} className={`${s.col} ${isOver || alvoTeclado ? s.over : ''}`} aria-label={BOARD_LABEL[stage]}>
+    <section ref={setNodeRef} className={`${s.col} ${isOver || alvoTeclado ? s.over : ''}`} aria-label={BOARD_LABEL[stage]} data-ativa={ativa}>
       <div className={s.colH}><span className={s.dot} style={{ background: COR[stage] }} />{BOARD_LABEL[stage]}<span className={`${s.n} num`}>{cards.length}</span></div>
       {cards.length ? children : <EmptyState icon={icone} text={texto} />}
     </section>

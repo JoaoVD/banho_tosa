@@ -20,3 +20,13 @@
 .notice { border-radius: var(--r-md); background: var(--orange-soft); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 .notice p { margin: 0; font-size: 14px; font-weight: 500; }
 .switchrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; font-size: 14px; }
+
+.etapas { overflow-x: auto; margin-bottom: -6px; }
+.etapas :global(.seg) { width: 100%; }
+.etapas :global(.seg button) { flex: 1 1 0; white-space: nowrap; min-height: 36px; padding: 0 8px; font-size: 13px; }
+@media (max-width: 699px) {
+  .board { display: block; overflow: visible; padding: 0; }
+  .col[data-ativa="false"] { display: none; }
+  .col { min-height: 0; }
+  .grip { display: none; }
+}

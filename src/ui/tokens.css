@@ -212,6 +212,12 @@ textarea.input { padding: 12px 14px; min-height: 110px; resize: vertical; }
   .so-celular { display: revert !important; }
   .so-pc { display: none !important; }
 }
-@media (max-width: 520px) { .widgets { grid-template-columns: minmax(0, 1fr); } .wa { display: none; } }
+@media (max-width: 699px) {
+  .widgets { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .widget { padding: 14px; gap: 4px; }
+  .widget .w-num { font-size: 26px; }
+  .widget .w-top { font-size: 13px; }
+  .widget .w-sub { font-size: 12px; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 @media (prefers-reduced-transparency: reduce) { .side, .toolbar, .toast { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--surface); } }
