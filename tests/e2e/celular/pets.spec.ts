@@ -41,3 +41,10 @@ test('ações rápidas da ficha com 44 px', async ({ page }) => {
     expect((await el.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   }
 });
+
+test('o ✕ fecha a busca mesmo com o campo vazio', async ({ page }) => {
+  await page.getByRole('button', { name: 'Buscar' }).click();
+  await expect(page.getByLabel('Buscar pet, tutor ou telefone')).toBeFocused();
+  await page.getByRole('button', { name: 'Buscar' }).click();
+  await expect(page.getByLabel('Buscar pet, tutor ou telefone')).toBeHidden();
+});

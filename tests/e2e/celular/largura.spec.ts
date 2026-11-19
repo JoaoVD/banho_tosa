@@ -40,3 +40,14 @@ for (const rota of ['/caixa', '/pacotes', '/hoje', '/pets']) {
     expect(alturas.filter(([, h]) => h < 44)).toEqual([]);
   });
 }
+
+for (const rota of ['/hoje', '/agenda', '/mensagens']) {
+  test(`seletores de ${rota} com 44 px`, async ({ page }) => {
+    await entrar(page, 'dona@exemplo.dev');
+    await page.goto(rota);
+    await page.waitForLoadState('networkidle');
+    const alturas = await page.locator('main .seg button').filter({ visible: true }).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
+    expect(alturas.length).toBeGreaterThan(0);
+    expect(alturas.filter((h) => h < 44)).toEqual([]);
+  });
+}

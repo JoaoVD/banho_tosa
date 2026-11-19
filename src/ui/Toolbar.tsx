@@ -20,7 +20,7 @@ export function Toolbar({ whatsappOk }: { whatsappOk: boolean }) {
         <label htmlFor="busca-global" className="sr-only">Buscar pet, tutor ou telefone</label>
         <input id="busca-global" ref={campo} name="q" placeholder="Buscar" autoComplete="off" onBlur={(e) => { if (!e.currentTarget.value) setBuscando(false); }} />
       </form>
-      <button type="button" className="ibtn tb-buscar" aria-label="Buscar" aria-expanded={buscando} onClick={() => setBuscando((b) => !b)}>
+      <button type="button" className="ibtn tb-buscar" aria-label="Buscar" aria-expanded={buscando} onPointerDown={(e) => e.preventDefault()} onClick={() => setBuscando((b) => !b)}>
         <Icon name={buscando ? 'x' : 'search'} size="lg" />
       </button>
       <Link className={`wa ${whatsappOk ? '' : 'off'}`} href="/mensagens">

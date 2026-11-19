@@ -28,19 +28,27 @@ export function MensagensView(props: {
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [aberta, setAberta] = useState<string | null>(props.selecionada ?? props.conversas[0]?.id ?? null);
+  // A conversa aberta vem da URL (?c=): o voltar do celular e a aba Mensagens levam de volta à lista.
+  // Sem ?c=, o PC abre a primeira conversa ao lado da lista; o celular mostra só a lista e não abre
+  // nada (abrir marca como lida).
+  const [primeiraNoPc, setPrimeiraNoPc] = useState<string | null>(null);
+  const primeira = props.conversas[0]?.id ?? null;
+  useEffect(() => {
+    setPrimeiraNoPc(window.matchMedia('(min-width: 700px)').matches ? primeira : null);
+  }, [primeira]);
+  const aberta = props.selecionada ?? primeiraNoPc;
+  const vendo = Boolean(props.selecionada);
   const [conversa, setConversa] = useState<Conversa | null>(null);
   const [verLembretes, setVerLembretes] = useState(false);
-  // Celular: lista ou conversa, uma de cada vez (no PC as duas aparecem lado a lado).
-  const [vendo, setVendo] = useState(Boolean(props.selecionada));
-  const primeira = props.conversas[0]?.id ?? null;
-  useEffect(() => { setAberta((a) => (a && props.conversas.some((c) => c.id === a) ? a : primeira)); }, [props.filtro, primeira, props.conversas]);
+  const urlDe = (c?: string) => `${pathname}?${new URLSearchParams({ filtro: props.filtro, ...(c ? { c } : {}) })}`;
   const recarregar = () => aberta && abrirConversa(aberta).then(setConversa);
   useEffect(() => { if (aberta) abrirConversa(aberta).then((c) => { setConversa(c); router.refresh(); }); else setConversa(null); }, [aberta, router]);
   useEffect(() => {
     const t = setInterval(() => { if (document.visibilityState === 'visible') { router.refresh(); recarregar(); } }, 15_000);
     return () => clearInterval(t);
   });
+  // Só mostra a conversa já carregada da que foi pedida (nunca a anterior enquanto carrega).
+  const atual = conversa && conversa.id === aberta ? conversa : null;
   const quandoLembrete = props.lembretes.dia === props.hoje ? `Hoje às ${props.lembretes.hora}` : `Amanhã às ${props.lembretes.hora}`;
   return (
     <div className="view">
@@ -51,11 +59,11 @@ export function MensagensView(props: {
       />
       <div className={s.inbox} data-vendo={vendo}>
         <div className={s.left}>
-          <Segmented label="Conversas" value={props.filtro} onChange={(f) => { setAberta(null); setVendo(false); router.push(`${pathname}?filtro=${f}`); }} options={[{ value: 'tutores', label: 'Tutores' }, { value: 'outros', label: 'Outros' }]} />
+          <Segmented label="Conversas" value={props.filtro} onChange={(f) => router.push(`${pathname}?filtro=${f}`)} options={[{ value: 'tutores', label: 'Tutores' }, { value: 'outros', label: 'Outros' }]} />
           {props.conversas.length ? (
             <div className="glist">
               {props.conversas.map((c) => (
-                <button key={c.id} type="button" className="row ind" aria-current={c.id === aberta ? 'true' : undefined} onClick={() => { setAberta(c.id); setVendo(true); }}>
+                <button key={c.id} type="button" className="row ind" aria-current={c.id === aberta ? 'true' : undefined} onClick={() => router.push(urlDe(c.id))}>
                   <Mono initials={c.tutorNome ? initials(c.tutorNome, 2) : '#'} gradient={gradientFor(c.tutorId ?? c.telefone)} />
                   <span className="grow">
                     <span className={s.linha}><b>{nomeDe(c)}</b><span className="cap num">{hhmmSP(new Date(c.ultimaEm))}</span></span>
@@ -69,7 +77,7 @@ export function MensagensView(props: {
             <div className="card"><EmptyState icon="msg" text={props.filtro === 'tutores' ? 'Nenhuma conversa com tutores ainda.' : 'Nenhuma mensagem de outros números.'} /></div>
           )}
         </div>
-        {conversa ? <Thread conversa={conversa} onChange={recarregar} pets={props.pets} servicos={props.servicos} onVoltar={() => setVendo(false)} /> : (
+        {atual ? <Thread key={atual.id} conversa={atual} onChange={recarregar} pets={props.pets} servicos={props.servicos} onVoltar={() => router.push(urlDe())} /> : (
           <div className={`card ${s.vazio}`}><EmptyState icon="msg" text="Escolha uma conversa." /></div>
         )}
       </div>

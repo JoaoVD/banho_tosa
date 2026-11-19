@@ -23,7 +23,7 @@
 
 .etapas { overflow-x: auto; margin-bottom: -6px; }
 .etapas :global(.seg) { width: 100%; }
-.etapas :global(.seg button) { flex: 1 1 0; white-space: nowrap; min-height: 36px; padding: 0 8px; font-size: 13px; }
+.etapas :global(.seg button) { flex: 1 1 0; white-space: nowrap; min-height: 44px; padding: 0 8px; font-size: 13px; }
 @media (max-width: 699px) {
   .board { display: block; overflow: visible; padding: 0; }
   .col[data-ativa="false"] { display: none; }

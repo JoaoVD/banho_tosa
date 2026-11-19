@@ -38,3 +38,37 @@ test('barra de abas some enquanto digita', async ({ page }) => {
   await campo(page).blur();
   await expect(page.locator('.tabbar')).toBeVisible();
 });
+
+test('ver a lista no celular não marca conversa como lida', async ({ page }) => {
+  const abas = page.getByRole('navigation', { name: 'Abas' });
+  await expect(abas.locator('.tb-badge')).toHaveText('1');
+  await page.waitForTimeout(2500);
+  await page.reload();
+  await expect(abas.locator('.tb-badge')).toHaveText('1');
+});
+
+test('voltar do celular sai da conversa para a lista', async ({ page }) => {
+  await page.getByRole('button', { name: /Ana Souza/ }).click();
+  await expect(page.getByRole('region', { name: 'Conversa com Ana Souza' })).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/mensagens(\?filtro=tutores)?$/);
+  await expect(page.getByRole('button', { name: /Ana Souza/ })).toBeVisible();
+});
+
+test('aba Mensagens com conversa aberta volta à lista', async ({ page }) => {
+  await page.getByRole('button', { name: /Ana Souza/ }).click();
+  await expect(page.getByRole('region', { name: 'Conversa com Ana Souza' })).toBeVisible();
+  await page.getByRole('navigation', { name: 'Abas' }).getByRole('link', { name: /^Mensagens/ }).click();
+  await expect(page.getByRole('button', { name: /Ana Souza/ })).toBeVisible();
+});
+
+test('abrir outra conversa não mostra a anterior', async ({ page }) => {
+  await page.getByRole('button', { name: /Ana Souza/ }).click();
+  await expect(page.getByRole('region', { name: 'Conversa com Ana Souza' })).toBeVisible();
+  await page.getByRole('button', { name: 'Conversas' }).click();
+  const outra = page.locator('main .glist button').filter({ hasNotText: 'Ana Souza' }).first();
+  const nome = (await outra.locator('b').first().textContent())!.trim();
+  await outra.click();
+  await expect(page.getByRole('region', { name: 'Conversa com Ana Souza' })).toHaveCount(0, { timeout: 1 });
+  await expect(page.getByRole('region', { name: `Conversa com ${nome}` })).toBeVisible();
+});
