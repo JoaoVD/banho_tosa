@@ -210,6 +210,9 @@ textarea.input { padding: 12px 14px; min-height: 110px; resize: vertical; }
   .sheet { left: 0; right: 0; top: auto; bottom: 0; transform: none; width: 100%; max-height: 92dvh; border-radius: 26px 26px 0 0;
     padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); animation: subir .42s var(--spring); }
   .so-pc { display: none !important; }
+  /* Alvos de toque de pelo menos 44 px. */
+  .btn, .btn.sm { min-height: 44px; }
+  .seg button { min-height: 40px; }
 }
 @media (max-width: 699px) {
   .widgets { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }

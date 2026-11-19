@@ -29,3 +29,14 @@ for (const rota of ['/hoje', '/agenda', '/pets', '/mensagens']) {
     expect(await violacoesGraves(page)).toEqual([]);
   });
 }
+
+for (const rota of ['/caixa', '/pacotes', '/hoje', '/pets']) {
+  test(`botões de ${rota} com 44 px`, async ({ page }) => {
+    await entrar(page, 'dona@exemplo.dev');
+    await page.goto(rota);
+    await page.waitForLoadState('networkidle');
+    const alturas = await page.locator('main .btn').filter({ visible: true }).evaluateAll((els) => els.map((e) => [e.textContent?.trim(), e.getBoundingClientRect().height] as const));
+    expect(alturas.length).toBeGreaterThan(0);
+    expect(alturas.filter(([, h]) => h < 44)).toEqual([]);
+  });
+}

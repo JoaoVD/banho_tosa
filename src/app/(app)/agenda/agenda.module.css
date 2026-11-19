@@ -37,7 +37,8 @@
 .semanaLinha { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: .5px solid var(--sep); font-size: 15px; }
 @media (max-width: 699px) {
   .cal { grid-template-columns: 40px minmax(0, 1fr) !important; gap: 0 8px; }
-  .cal [data-ativa="false"] { display: none; }
+  .cal [data-ativa="false"], .cal .hd { display: none; }
+  .cal > div:first-child { display: none; }
   .scroll { overflow: visible; }
   .week { padding: 6px 4px; gap: 2px; }
   .week :global(.ibtn) { width: 36px; min-height: 44px; flex: 0 0 auto; }
