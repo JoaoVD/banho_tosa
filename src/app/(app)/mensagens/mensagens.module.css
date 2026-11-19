@@ -22,4 +22,20 @@
 .compose input { flex: 1; min-width: 0; min-height: 40px; border-radius: 999px; border: .5px solid var(--sep); background: var(--bg); padding: 0 16px; font-size: 15px; }
 .compose input:focus { outline: none; box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--tint) 40%, transparent); }
 .send { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--tint); color: var(--on-tint); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
-@media (max-width: 520px) { .left { max-width: none; } }
+.voltar { border: 0; background: none; color: var(--tint); width: 36px; min-height: 44px; margin: -8px -6px -8px -10px; display: flex; align-items: center; justify-content: center; }
+@media (max-width: 699px) {
+  .inbox { flex-direction: column; flex-wrap: nowrap; }
+  .left { max-width: none; flex: none; }
+  .inbox[data-vendo="false"] .thread, .inbox[data-vendo="false"] .vazio, .inbox[data-vendo="true"] .left { display: none; }
+  .thread { flex: none; overflow: visible; }
+  .head { border-radius: var(--r-xl) var(--r-xl) 0 0; }
+  .compose { border-radius: 0 0 var(--r-xl) var(--r-xl); }
+  .head { padding: 10px 14px; gap: 10px; }
+  .head :global(.btn) { flex: 0 0 auto; }
+  .body { max-height: none; min-height: 40vh; padding: 16px 12px; }
+  /* Fica acima da barra de abas. O botão Enviar não tira o foco do campo (teclado continua aberto, como no WhatsApp). */
+  .compose { position: sticky; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); background: var(--surface); }
+  .compose input { font-size: 16px; min-height: 44px; }
+  .send { width: 44px; height: 44px; }
+  .offer { margin: 0 12px 12px; }
+}

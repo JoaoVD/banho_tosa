@@ -31,6 +31,8 @@ export function MensagensView(props: {
   const [aberta, setAberta] = useState<string | null>(props.selecionada ?? props.conversas[0]?.id ?? null);
   const [conversa, setConversa] = useState<Conversa | null>(null);
   const [verLembretes, setVerLembretes] = useState(false);
+  // Celular: lista ou conversa, uma de cada vez (no PC as duas aparecem lado a lado).
+  const [vendo, setVendo] = useState(Boolean(props.selecionada));
   const primeira = props.conversas[0]?.id ?? null;
   useEffect(() => { setAberta((a) => (a && props.conversas.some((c) => c.id === a) ? a : primeira)); }, [props.filtro, primeira, props.conversas]);
   const recarregar = () => aberta && abrirConversa(aberta).then(setConversa);
@@ -47,13 +49,13 @@ export function MensagensView(props: {
         title="Mensagens"
         actions={<Button variant="tinted" onClick={() => setVerLembretes(true)}><Icon name="bell" />{`Próximos lembretes (${props.lembretes.itens.length})`}</Button>}
       />
-      <div className={s.inbox}>
+      <div className={s.inbox} data-vendo={vendo}>
         <div className={s.left}>
-          <Segmented label="Conversas" value={props.filtro} onChange={(f) => { setAberta(null); router.push(`${pathname}?filtro=${f}`); }} options={[{ value: 'tutores', label: 'Tutores' }, { value: 'outros', label: 'Outros' }]} />
+          <Segmented label="Conversas" value={props.filtro} onChange={(f) => { setAberta(null); setVendo(false); router.push(`${pathname}?filtro=${f}`); }} options={[{ value: 'tutores', label: 'Tutores' }, { value: 'outros', label: 'Outros' }]} />
           {props.conversas.length ? (
             <div className="glist">
               {props.conversas.map((c) => (
-                <button key={c.id} type="button" className="row ind" aria-current={c.id === aberta ? 'true' : undefined} onClick={() => setAberta(c.id)}>
+                <button key={c.id} type="button" className="row ind" aria-current={c.id === aberta ? 'true' : undefined} onClick={() => { setAberta(c.id); setVendo(true); }}>
                   <Mono initials={c.tutorNome ? initials(c.tutorNome, 2) : '#'} gradient={gradientFor(c.tutorId ?? c.telefone)} />
                   <span className="grow">
                     <span className={s.linha}><b>{nomeDe(c)}</b><span className="cap num">{hhmmSP(new Date(c.ultimaEm))}</span></span>
@@ -67,7 +69,7 @@ export function MensagensView(props: {
             <div className="card"><EmptyState icon="msg" text={props.filtro === 'tutores' ? 'Nenhuma conversa com tutores ainda.' : 'Nenhuma mensagem de outros números.'} /></div>
           )}
         </div>
-        {conversa ? <Thread conversa={conversa} onChange={recarregar} pets={props.pets} servicos={props.servicos} /> : (
+        {conversa ? <Thread conversa={conversa} onChange={recarregar} pets={props.pets} servicos={props.servicos} onVoltar={() => setVendo(false)} /> : (
           <div className={`card ${s.vazio}`}><EmptyState icon="msg" text="Escolha uma conversa." /></div>
         )}
       </div>
@@ -88,7 +90,7 @@ export function MensagensView(props: {
   );
 }
 
-function Thread({ conversa, onChange, pets, servicos }: { conversa: Conversa; onChange: () => void; pets: PetOpcao[]; servicos: ServicoOpcao[] }) {
+function Thread({ conversa, onChange, pets, servicos, onVoltar }: { conversa: Conversa; onChange: () => void; pets: PetOpcao[]; servicos: ServicoOpcao[]; onVoltar: () => void }) {
   const router = useRouter();
   const toast = useToast();
   const [texto, setTexto] = useState('');
@@ -113,6 +115,7 @@ function Thread({ conversa, onChange, pets, servicos }: { conversa: Conversa; on
   return (
     <section className={s.thread} aria-label={`Conversa com ${conversa.tutorNome ?? conversa.telefone}`}>
       <div className={s.head}>
+        <button type="button" className={`so-celular ${s.voltar}`} onClick={onVoltar} aria-label="Conversas"><Icon name="left" /></button>
         <Mono initials={conversa.tutorNome ? initials(conversa.tutorNome, 2) : '#'} gradient={gradientFor(conversa.tutorId ?? conversa.telefone)} />
         <div><b>{conversa.tutorNome ?? formatPhoneBR(conversa.telefone)}</b><div className="cap">{conversa.petNome ? `Pet: ${conversa.petNome}` : formatPhoneBR(conversa.telefone)}</div></div>
         {conversa.petId ? <Link className="btn gray sm" style={{ marginLeft: 'auto' }} href={`/pets/${conversa.petId}`}>Ver ficha</Link>
@@ -133,7 +136,7 @@ function Thread({ conversa, onChange, pets, servicos }: { conversa: Conversa; on
       <form className={s.compose} onSubmit={(e) => { e.preventDefault(); if (!texto.trim()) return; start(async () => { await responderAction(conversa.id, texto); setTexto(''); onChange(); }); }}>
         <label htmlFor="msg" className="sr-only">{`Mensagem para ${nome}`}</label>
         <input id="msg" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Mensagem" autoComplete="off" />
-        <button className={s.send} aria-label="Enviar" disabled={pending}><Icon name="send" /></button>
+        <button className={s.send} aria-label="Enviar" disabled={pending} onPointerDown={(e) => e.preventDefault()}><Icon name="send" /></button>
       </form>
       {outro && p && (
         <NovoAgendamentoSheet open onClose={() => setOutro(false)} pets={pets} servicos={servicos} dia={p.inicio.toISOString().slice(0, 10)} petId={p.petId} onDone={() => { onChange(); router.refresh(); }} />
