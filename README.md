@@ -16,7 +16,7 @@ npm install
 cp .env.example .env.local
 npm run db:local up     # sobe um Postgres local que imita o Supabase
 npm run seed            # dados de exemplo
-npm run dev             # http://localhost:3000  (dona@exemplo.dev ou recepcao@exemplo.dev, senha: dev)
+npm run dev             # http://localhost:3000  (usuário dona ou recepcao, senha: dev)
 npm run worker          # opcional: fila do WhatsApp (falso) e lembretes
 ```
 

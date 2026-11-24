@@ -97,7 +97,7 @@ Custo aproximado: Supabase e Vercel no plano gratuito aguentam uma loja; a VPS c
 
 Existe uma loja separada, **Pet Spa Demonstração**, com cerca de 30 clientes, histórico de 3 meses, o dia de hoje no quadro, a agenda da semana, pacotes, pontos, conversas de WhatsApp e caixas fechados.
 
-- Dona: `dona.demo@exemplo.com.br` · Recepção: `recepcao.demo@exemplo.com.br` · senha: `demo1234`
+- Usuários: `dona.demo` (dona) · `recepcao.demo` (recepção) · senha: `demo1234`
 - A loja é marcada como demo: **o sistema nunca envia WhatsApp para ela** (os telefones são inventados).
 - As datas são relativas ao dia em que os dados foram gerados. **Antes de cada apresentação**, gere de novo para o quadro do dia ficar atual:
   ```bash

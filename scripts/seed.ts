@@ -108,7 +108,7 @@ export async function seed() {
   const dona = crypto.randomUUID();
   const rec = crypto.randomUUID();
   await sql`insert into auth.users (id, email) values (${dona}, 'dona@exemplo.dev'), (${rec}, 'recepcao@exemplo.dev')`;
-  await sql`insert into perfis (user_id, loja_id, nome, papel) values (${dona}, ${loja}, 'Dona', 'dona'), (${rec}, ${loja}, 'Renata', 'recepcao')`;
+  await sql`insert into perfis (user_id, loja_id, nome, papel, usuario) values (${dona}, ${loja}, 'Dona', 'dona', 'dona'), (${rec}, ${loja}, 'Renata', 'recepcao', 'recepcao')`;
   await sql`insert into configuracoes (loja_id) values (${loja})`;
   for (const d of [1, 2, 3, 4, 5, 6]) {
     await sql`insert into horarios_funcionamento (loja_id, dia_semana, abre, fecha) values (${loja}, ${d}, '08:00', ${d === 6 ? '14:00' : '18:00'})`;
@@ -136,6 +136,6 @@ export async function seed() {
 
 if (process.argv[1]?.endsWith('seed.ts')) {
   seed()
-    .then(() => console.log('seed ok: dona@exemplo.dev / recepcao@exemplo.dev (senha: dev)'))
+    .then(() => console.log('seed ok: usuários dona / recepcao (senha: dev)'))
     .finally(() => sql.end());
 }

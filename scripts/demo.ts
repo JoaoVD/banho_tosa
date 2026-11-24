@@ -116,8 +116,8 @@ on conflict (provider_id, provider) do nothing;`);
 
   ins('lojas', [{ id: L, nome: 'Pet Spa Demonstração', telefone_dona: '+5511900000099', onboarding_concluido: true, demo: true }]);
   ins('perfis', [
-    { user_id: DEMO.dona, loja_id: L, nome: 'Dona', papel: 'dona' },
-    { user_id: DEMO.recepcao, loja_id: L, nome: 'Renata', papel: 'recepcao' },
+    { user_id: DEMO.dona, loja_id: L, nome: 'Dona', papel: 'dona', usuario: 'dona.demo' },
+    { user_id: DEMO.recepcao, loja_id: L, nome: 'Renata', papel: 'recepcao', usuario: 'recepcao.demo' },
   ]);
   ins('configuracoes', [{ loja_id: L }]);
   ins('horarios_funcionamento', [0, 1, 2, 3, 4, 5, 6].map((d) => ({ loja_id: L, dia_semana: d, abre: d === 0 ? '09:00' : '08:00', fecha: d === 0 ? '13:00' : d === 6 ? '15:00' : '18:00' })));
