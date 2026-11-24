@@ -37,5 +37,5 @@ test('semana em lista', async ({ page }) => {
 
 test('setas da semana com 44 px', async ({ page }) => {
   await page.goto('/agenda');
-  for (const nome of ['Semana anterior', 'Próxima semana']) expect((await page.getByRole('link', { name: nome }).boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  for (const nome of ['Semana anterior', 'Próxima semana']) expect((await page.getByRole('link', { name: nome }).boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
 });

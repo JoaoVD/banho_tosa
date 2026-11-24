@@ -3,7 +3,7 @@ import { entrar, resetarDados } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   resetarDados();
-  await entrar(page, 'dona@exemplo.dev');
+  await entrar(page, 'dona');
 });
 
 test('edita o texto de "Pet pronto"', async ({ page }) => {

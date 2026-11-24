@@ -11,7 +11,7 @@ test('recepção vê os 6 itens e não vê Configurações', async ({ page }) =>
 });
 
 test('dona vê Configurações', async ({ page }) => {
-  await entrar(page, 'dona@exemplo.dev');
+  await entrar(page, 'dona');
   await expect(page.getByRole('navigation', { name: 'Menu principal' }).getByRole('link', { name: 'Configurações' })).toBeVisible();
 });
 

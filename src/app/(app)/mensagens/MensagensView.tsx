@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import type { MensagemView, PropostaView } from '@/db/repos/mensagens';
 import { formatPhoneBR } from '@/domain/phone';
@@ -22,7 +22,7 @@ const SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const nomeDe = (c: { tutorNome: string | null; telefone: string }) => c.tutorNome ?? formatPhoneBR(c.telefone);
 
 export function MensagensView(props: {
-  filtro: 'tutores' | 'outros'; conectado: boolean; conversas: Item[]; selecionada: string | null;
+  filtro: 'tutores' | 'outros'; conectado: boolean; conversas: Item[];
   lembretes: { dia: string; hora: string; itens: { tutorId: string; tutorNome: string; petNome: string }[] };
   hoje: string; pets: PetOpcao[]; servicos: ServicoOpcao[];
 }) {
@@ -36,8 +36,12 @@ export function MensagensView(props: {
   useEffect(() => {
     setPrimeiraNoPc(window.matchMedia('(min-width: 700px)').matches ? primeira : null);
   }, [primeira]);
-  const aberta = props.selecionada ?? primeiraNoPc;
-  const vendo = Boolean(props.selecionada);
+  // Trocar de conversa só muda a URL no navegador (sem ir ao servidor): é instantâneo e não
+  // disputa com as ações da conversa (ex.: Confirmar). O voltar do navegador continua funcionando.
+  const selecionada = useSearchParams().get('c');
+  const aberta = selecionada ?? primeiraNoPc;
+  const vendo = Boolean(selecionada);
+  const irPara = (c?: string) => window.history.pushState(null, '', urlDe(c));
   const [conversa, setConversa] = useState<Conversa | null>(null);
   const [verLembretes, setVerLembretes] = useState(false);
   const urlDe = (c?: string) => `${pathname}?${new URLSearchParams({ filtro: props.filtro, ...(c ? { c } : {}) })}`;
@@ -63,7 +67,7 @@ export function MensagensView(props: {
           {props.conversas.length ? (
             <div className="glist">
               {props.conversas.map((c) => (
-                <button key={c.id} type="button" className="row ind" aria-current={c.id === aberta ? 'true' : undefined} onClick={() => router.push(urlDe(c.id))}>
+                <button key={c.id} type="button" className="row ind" aria-current={c.id === aberta ? 'true' : undefined} onClick={() => irPara(c.id)}>
                   <Mono initials={c.tutorNome ? initials(c.tutorNome, 2) : '#'} gradient={gradientFor(c.tutorId ?? c.telefone)} />
                   <span className="grow">
                     <span className={s.linha}><b>{nomeDe(c)}</b><span className="cap num">{hhmmSP(new Date(c.ultimaEm))}</span></span>
@@ -77,7 +81,7 @@ export function MensagensView(props: {
             <div className="card"><EmptyState icon="msg" text={props.filtro === 'tutores' ? 'Nenhuma conversa com tutores ainda.' : 'Nenhuma mensagem de outros números.'} /></div>
           )}
         </div>
-        {atual ? <Thread key={atual.id} conversa={atual} onChange={recarregar} pets={props.pets} servicos={props.servicos} onVoltar={() => router.push(urlDe())} /> : (
+        {atual ? <Thread key={atual.id} conversa={atual} onChange={recarregar} pets={props.pets} servicos={props.servicos} onVoltar={() => irPara()} /> : (
           <div className={`card ${s.vazio}`}><EmptyState icon="msg" text="Escolha uma conversa." /></div>
         )}
       </div>

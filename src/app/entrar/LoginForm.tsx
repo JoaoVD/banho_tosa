@@ -8,8 +8,8 @@ export function LoginForm() {
   return (
     <form action={action} className={s.form} noValidate>
       <div className={s.field}>
-        <label htmlFor="email">E-mail</label>
-        <input id="email" name="email" type="email" autoComplete="username" required />
+        <label htmlFor="usuario">Usuário</label>
+        <input id="usuario" name="usuario" type="text" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required />
       </div>
       <div className={s.field}>
         <label htmlFor="senha">Senha</label>

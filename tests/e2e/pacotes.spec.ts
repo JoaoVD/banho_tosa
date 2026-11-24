@@ -4,7 +4,7 @@ import { entrar, resetarDados } from './helpers';
 test.beforeEach(() => resetarDados());
 
 test('dona cria o modelo "2 banhos e 1 tosa"', async ({ page }) => {
-  await entrar(page, 'dona@exemplo.dev');
+  await entrar(page, 'dona');
   await page.goto('/pacotes');
   await page.getByRole('button', { name: 'Criar pacote' }).click();
   const d = page.getByRole('dialog', { name: 'Novo pacote' });

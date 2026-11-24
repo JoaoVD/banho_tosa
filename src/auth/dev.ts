@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { serviceDb } from '@/db/client';
+import { contaDoUsuario } from './usuario';
 import { ERRO_LOGIN, type AuthProvider, type SessionUser } from './provider';
 
 export const DEV_COOKIE = 'bt_dev';
@@ -35,9 +36,9 @@ export const devAuth: AuthProvider = {
     const id = verify((await cookies()).get(DEV_COOKIE)?.value);
     return id ? perfil(id) : null;
   },
-  async signIn(email, password) {
+  async signIn(usuario, password) {
     if (password !== SENHA_DEV) return { ok: false, error: ERRO_LOGIN };
-    const [u] = await serviceDb()<{ id: string }[]>`select id from auth.users where lower(email) = lower(${email.trim()})`;
+    const u = await contaDoUsuario(usuario);
     if (!u || !(await perfil(u.id))) return { ok: false, error: ERRO_LOGIN };
     (await cookies()).set(DEV_COOKIE, sign(u.id), { httpOnly: true, sameSite: 'lax', path: '/' });
     return { ok: true };

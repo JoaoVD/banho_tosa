@@ -3,7 +3,7 @@ import path from 'node:path';
 import { entrar } from './helpers';
 
 test('importa a planilha de clientes', async ({ page }) => {
-  await entrar(page, 'dona@exemplo.dev');
+  await entrar(page, 'dona');
   await page.goto('/configuracoes/importar');
   await page.getByLabel('Planilha (.xlsx ou .csv)').setInputFiles(path.join(__dirname, 'fixtures/clientes.csv'));
   await page.getByRole('button', { name: 'Ler planilha' }).click();

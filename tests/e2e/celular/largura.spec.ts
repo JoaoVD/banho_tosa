@@ -12,7 +12,7 @@ for (const largura of [390, 820]) {
     for (const rota of ROTAS) {
       test(`sem rolagem lateral em ${rota}`, async ({ page }) => {
         test.fixme(PENDENTES.has(rota), 'tela ainda não adaptada');
-        await entrar(page, 'dona@exemplo.dev');
+        await entrar(page, 'dona');
         await page.goto(rota);
         await page.waitForLoadState('networkidle');
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(largura);
@@ -24,7 +24,7 @@ for (const largura of [390, 820]) {
 for (const rota of ['/hoje', '/agenda', '/pets', '/mensagens']) {
   test(`acessibilidade no celular em ${rota}`, async ({ page }) => {
     test.fixme(PENDENTES.has(rota), 'tela ainda não adaptada');
-    await entrar(page, 'dona@exemplo.dev');
+    await entrar(page, 'dona');
     await page.goto(rota);
     expect(await violacoesGraves(page)).toEqual([]);
   });
@@ -32,7 +32,7 @@ for (const rota of ['/hoje', '/agenda', '/pets', '/mensagens']) {
 
 for (const rota of ['/caixa', '/pacotes', '/hoje', '/pets']) {
   test(`botões de ${rota} com 44 px`, async ({ page }) => {
-    await entrar(page, 'dona@exemplo.dev');
+    await entrar(page, 'dona');
     await page.goto(rota);
     await page.waitForLoadState('networkidle');
     const alturas = await page.locator('main .btn').filter({ visible: true }).evaluateAll((els) => els.map((e) => [e.textContent?.trim(), e.getBoundingClientRect().height] as const));
@@ -43,7 +43,7 @@ for (const rota of ['/caixa', '/pacotes', '/hoje', '/pets']) {
 
 for (const rota of ['/hoje', '/agenda', '/mensagens']) {
   test(`seletores de ${rota} com 44 px`, async ({ page }) => {
-    await entrar(page, 'dona@exemplo.dev');
+    await entrar(page, 'dona');
     await page.goto(rota);
     await page.waitForLoadState('networkidle');
     const alturas = await page.locator('main .seg button').filter({ visible: true }).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));

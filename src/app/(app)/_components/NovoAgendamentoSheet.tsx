@@ -81,7 +81,8 @@ export function NovoAgendamentoSheet({
             <div className="glist">
               <div className="row"><span className="grow">Confirmar pelo WhatsApp</span><Switch name="confirmar" label="Confirmar pelo WhatsApp" checked={confirmar} onChange={setConfirmar} /></div>
             </div>
-            <Button size="lg" busy={pending} busyLabel="Agendando">Agendar</Button>
+            {/* Só agenda depois que os horários livres chegaram (senão iria sem horário). */}
+            <Button size="lg" busy={pending} busyLabel="Agendando" disabled={carregando}>Agendar</Button>
           </div>
         )}
       </ActionForm>

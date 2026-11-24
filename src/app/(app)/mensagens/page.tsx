@@ -8,7 +8,7 @@ import { agora } from '@/lib/agora';
 import { getProvider } from '@/whatsapp/provider';
 import { MensagensView } from './MensagensView';
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ filtro?: string; c?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
   const user = await getUser();
   const sp = await searchParams;
   const filtro = sp.filtro === 'outros' ? 'outros' : 'tutores';
@@ -24,7 +24,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ f
       filtro={filtro}
       conectado={conexao.state === 'open'}
       conversas={data.conversas.map((c) => ({ ...c, ultimaEm: c.ultimaEm.toISOString() }))}
-      selecionada={sp.c ?? null}
       lembretes={data.lembretes}
       hoje={dayKeySP(agora())}
       pets={data.pets.map((p) => ({ id: p.id, label: `${p.nome}, ${p.tutorNome}` }))}

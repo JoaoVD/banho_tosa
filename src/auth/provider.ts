@@ -4,8 +4,8 @@ export type SessionUser = { id: string; lojaId: string; papel: Papel; nome: stri
 
 export interface AuthProvider {
   currentUser(): Promise<SessionUser | null>;
-  signIn(email: string, password: string): Promise<{ ok: boolean; error?: string }>;
+  signIn(usuario: string, password: string): Promise<{ ok: boolean; error?: string }>;
   signOut(): Promise<void>;
 }
 
-export const ERRO_LOGIN = 'E-mail ou senha incorretos.';
+export const ERRO_LOGIN = 'Usuário ou senha incorretos.';

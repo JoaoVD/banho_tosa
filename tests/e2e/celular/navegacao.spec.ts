@@ -31,7 +31,7 @@ test('Mais leva ao Caixa e permite sair', async ({ page }) => {
 });
 
 test('dona vê Configurações no Mais', async ({ page }) => {
-  await entrar(page, 'dona@exemplo.dev');
+  await entrar(page, 'dona');
   await abas(page).getByRole('button', { name: 'Mais' }).click();
   await expect(page.getByRole('dialog', { name: 'Mais' }).getByRole('link', { name: 'Configurações' })).toBeVisible();
 });

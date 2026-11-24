@@ -63,7 +63,7 @@ test('um dia na loja, do começo ao fim', async ({ page, request }) => {
 test('nenhuma tela principal tem violação grave de acessibilidade', async ({ page }) => {
   test.setTimeout(180_000);
   resetarDados();
-  await entrar(page, 'dona@exemplo.dev');
+  await entrar(page, 'dona');
   await page.goto('/pets');
   const ficha = await page.getByRole('link', { name: /Thor/ }).first().getAttribute('href');
   const rotas = ['/hoje', '/agenda', '/pets', ficha!, '/mensagens', '/pacotes', '/caixa', '/configuracoes', '/configuracoes/servicos', '/configuracoes/mensagens', '/configuracoes/whatsapp', '/configuracoes/importar', '/entrar'];

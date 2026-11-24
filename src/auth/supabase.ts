@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { withClaims } from '@/db/session';
+import { contaDoUsuario } from './usuario';
 import { ERRO_LOGIN, type AuthProvider, type SessionUser } from './provider';
 
 async function client() {
@@ -27,8 +28,10 @@ export const supabaseAuth: AuthProvider = {
       select user_id as id, loja_id as "lojaId", papel, nome from perfis where user_id = ${data.user!.id}`);
     return rows[0] ?? null;
   },
-  async signIn(email, password) {
-    const { error } = await (await client()).auth.signInWithPassword({ email: email.trim(), password });
+  async signIn(usuario, password) {
+    const conta = await contaDoUsuario(usuario);
+    if (!conta) return { ok: false, error: ERRO_LOGIN };
+    const { error } = await (await client()).auth.signInWithPassword({ email: conta.email, password });
     return error ? { ok: false, error: ERRO_LOGIN } : { ok: true };
   },
   async signOut() {
