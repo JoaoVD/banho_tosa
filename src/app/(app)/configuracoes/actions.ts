@@ -7,6 +7,8 @@ import { serviceDb } from '@/db/client';
 import { withSession } from '@/db/session';
 import { setHorarios, updateConfig, updateLoja, upsertProfissional } from '@/db/repos/config';
 import { upsertServico } from '@/db/repos/servicos';
+import { perfilDaLoja } from '@/db/repos/usuarios';
+import { ERRO_USUARIO, SENHA_MIN, USUARIO_RE, emailInterno, normalizarUsuario } from '@/domain/usuario';
 import { parseBRL } from '@/domain/money';
 import { normalizePhone } from '@/domain/phone';
 import { PORTES, PORTE_LABEL, type Porte } from '@/domain/types';
@@ -103,30 +105,51 @@ export async function salvarServico(_: FormResult, f: FormData): Promise<FormRes
   return ok('Serviço salvo');
 }
 
-export async function convidarUsuario(_: FormResult, f: FormData): Promise<FormResult> {
+async function supabaseAdmin() {
+  const { createClient } = await import('@supabase/supabase-js');
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+}
+
+/** A dona cria um usuário já com senha (sem e-mail). Em modo dev a senha de login continua "dev". */
+export async function criarUsuario(_: FormResult, f: FormData): Promise<FormResult> {
   const user = await requireDona();
-  const email = String(f.get('email') ?? '').trim().toLowerCase();
   const nome = String(f.get('nome') ?? '').trim();
+  const usuario = normalizarUsuario(String(f.get('usuario') ?? ''));
+  const senha = String(f.get('senha') ?? '');
   const papel = f.get('papel') === 'dona' ? 'dona' : 'recepcao';
   const fieldErrors: Record<string, string> = {};
-  if (!/^\S+@\S+\.\S+$/.test(email)) fieldErrors.email = 'E-mail inválido.';
   if (!nome) fieldErrors.nome = 'Informe o nome.';
+  if (!USUARIO_RE.test(usuario)) fieldErrors.usuario = ERRO_USUARIO;
+  if (senha.length < SENHA_MIN) fieldErrors.senha = `Mínimo de ${SENHA_MIN} caracteres.`;
   if (Object.keys(fieldErrors).length) return { fieldErrors };
+  // Único no sistema inteiro (a RLS só mostraria a própria loja): checa pela conexão de serviço.
+  const [existe] = await serviceDb()`select 1 from perfis where lower(usuario) = ${usuario}`;
+  if (existe) return { fieldErrors: { usuario: 'Esse usuário já existe.' } };
   let userId: string;
   if (process.env.AUTH_MODE === 'supabase') {
-    const { createClient } = await import('@supabase/supabase-js');
-    const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-    const { data, error } = await admin.auth.admin.inviteUserByEmail(email);
-    if (error || !data.user) return { error: 'Não foi possível convidar esse e-mail.' };
+    const { data, error } = await (await supabaseAdmin()).auth.admin.createUser({ email: emailInterno(usuario), password: senha, email_confirm: true });
+    if (error || !data.user) return { error: 'Não foi possível criar o usuário. Tente outro nome de usuário.' };
     userId = data.user.id;
   } else {
-    const svc = serviceDb();
-    const [u] = await svc`insert into auth.users (id, email) values (gen_random_uuid(), ${email})
-      on conflict (email) do update set email = excluded.email returning id`;
+    const [u] = await serviceDb()`insert into auth.users (id, email) values (gen_random_uuid(), ${emailInterno(usuario)}) returning id`;
     userId = u.id;
   }
-  await withSession(user, (tx) => tx`insert into perfis (user_id, loja_id, nome, papel) values (${userId}, ${user.lojaId}, ${nome}, ${papel})
-    on conflict (user_id) do update set nome = excluded.nome, papel = excluded.papel`);
+  await withSession(user, (tx) => tx`insert into perfis (user_id, loja_id, nome, papel, usuario) values (${userId}, ${user.lojaId}, ${nome}, ${papel}, ${usuario})`);
   revalidatePath('/configuracoes/usuarios');
-  return ok(process.env.AUTH_MODE === 'supabase' ? 'Convite enviado por e-mail' : 'Usuário criado (senha de teste: dev)');
+  return ok('Usuário criado');
+}
+
+/** A dona troca a senha de alguém da loja (quem esqueceu a senha). */
+export async function redefinirSenha(_: FormResult, f: FormData): Promise<FormResult> {
+  const user = await requireDona();
+  const userId = String(f.get('userId') ?? '');
+  const senha = String(f.get('senha') ?? '');
+  if (senha.length < SENHA_MIN) return { fieldErrors: { senha: `Mínimo de ${SENHA_MIN} caracteres.` } };
+  const alvo = await withSession(user, (tx) => perfilDaLoja(tx, userId));
+  if (!alvo) return { error: 'Usuário não encontrado.' };
+  if (process.env.AUTH_MODE === 'supabase') {
+    const { error } = await (await supabaseAdmin()).auth.admin.updateUserById(alvo.id, { password: senha });
+    if (error) return { error: 'Não foi possível redefinir a senha.' };
+  }
+  return ok('Senha redefinida');
 }

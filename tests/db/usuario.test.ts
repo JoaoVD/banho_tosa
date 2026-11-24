@@ -2,7 +2,7 @@ import { afterAll, beforeEach, expect, test } from 'vitest';
 import { resetDb, seedLoja, sql } from './helpers';
 
 beforeEach(resetDb);
-afterAll(async () => { await sql.end(); });
+afterAll(async () => { await sql.end(); await (await import('@/db/client')).db.end(); });
 
 async function perfil(lojaId: string, email: string, usuario?: string) {
   const id = crypto.randomUUID();
@@ -32,4 +32,14 @@ test('sem usuário informado, nasce da parte do e-mail antes do @, numerado se r
   expect(await perfil(lojaId, 'ana.paula@y.com')).toBe('ana.paula2');
   expect(await perfil(lojaId, 'jo@z.com')).toBe('jo1');
   expect((await perfil(lojaId, `${'b'.repeat(40)}@x.com`)).length).toBeLessThanOrEqual(30);
+});
+
+test('perfilDaLoja não enxerga perfil de outra loja', async () => {
+  const { perfilDaLoja } = await import('@/db/repos/usuarios');
+  const { withSession } = await import('@/db/session');
+  const a = await seedLoja('A');
+  const b = await seedLoja('B');
+  const donaA = { id: a.donaId, lojaId: a.lojaId, papel: 'dona' as const, nome: 'Dona' };
+  expect(await withSession(donaA, (tx) => perfilDaLoja(tx, a.recepcaoId))).toMatchObject({ nome: 'Renata' });
+  expect(await withSession(donaA, (tx) => perfilDaLoja(tx, b.recepcaoId))).toBeNull();
 });

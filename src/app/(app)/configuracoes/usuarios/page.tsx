@@ -3,12 +3,13 @@ import { withSession } from '@/db/session';
 import { GroupList, PageHead } from '@/ui/bits';
 import { Mono, gradientFor, initials } from '@/ui/Mono';
 import { Voltar } from '../Voltar';
-import { ConvidarForm } from './ConvidarForm';
+import { listUsuarios } from '@/db/repos/usuarios';
+import { NovoUsuarioForm } from './NovoUsuarioForm';
+import { RedefinirSenha } from './RedefinirSenha';
 
 export default async function Page() {
   const user = await requireDona();
-  const perfis = await withSession(user, (tx) => tx<{ id: string; nome: string; papel: string }[]>`
-    select user_id as id, nome, papel from perfis where loja_id = loja_atual() order by papel, nome`);
+  const perfis = await withSession(user, listUsuarios);
   return (
     <div className="view" style={{ maxWidth: 720 }}>
       <Voltar />
@@ -17,11 +18,12 @@ export default async function Page() {
         {perfis.map((p) => (
           <div className="row ind" key={p.id}>
             <Mono initials={initials(p.nome)} gradient={gradientFor(p.id)} size="sm" />
-            <span className="grow">{p.nome}<br /><span className="cap">{p.papel === 'dona' ? 'Dona (administração)' : 'Recepção'}</span></span>
+            <span className="grow">{p.nome}<br /><span className="cap">{`${p.usuario} · ${p.papel === 'dona' ? 'Dona (administração)' : 'Recepção'}`}</span></span>
+            <RedefinirSenha userId={p.id} nome={p.nome} />
           </div>
         ))}
       </GroupList>
-      <ConvidarForm />
+      <NovoUsuarioForm />
     </div>
   );
 }
