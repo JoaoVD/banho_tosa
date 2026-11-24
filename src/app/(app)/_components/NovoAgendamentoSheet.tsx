@@ -30,13 +30,19 @@ export function NovoAgendamentoSheet({
 
   useEffect(() => {
     let vivo = true;
-    if (!petId || !servicoId || !dia) { setOpcoes([]); setInicio(''); return; }
+    if (!petId || !servicoId || !dia) { setOpcoes([]); setInicio(''); setCarregando(false); return; }
     setCarregando(true);
     buscarHorarios(petId, servicoId, dia).then((o) => {
       if (!vivo) return;
       setOpcoes(o);
       const preferido = hora ? o.find((x) => new Date(x.value).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) === hora) : undefined;
       setInicio(preferido?.value ?? o[0]?.value ?? '');
+      setCarregando(false);
+    }).catch(() => {
+      // Falhou a busca: não deixa o botão travado; o envio sem horário mostra o erro no campo.
+      if (!vivo) return;
+      setOpcoes([]);
+      setInicio('');
       setCarregando(false);
     });
     return () => { vivo = false; };

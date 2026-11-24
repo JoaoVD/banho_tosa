@@ -127,9 +127,23 @@ export async function criarUsuario(_: FormResult, f: FormData): Promise<FormResu
   if (existe) return { fieldErrors: { usuario: 'Esse usuário já existe.' } };
   let userId: string;
   if (process.env.AUTH_MODE === 'supabase') {
-    const { data, error } = await (await supabaseAdmin()).auth.admin.createUser({ email: emailInterno(usuario), password: senha, email_confirm: true });
-    if (error || !data.user) return { error: 'Não foi possível criar o usuário. Tente outro nome de usuário.' };
+    const admin = await supabaseAdmin();
+    const { data, error } = await admin.auth.admin.createUser({ email: emailInterno(usuario), password: senha, email_confirm: true });
+    if (error || !data.user) {
+      console.error('criarUsuario: Supabase recusou a conta', error?.message);
+      return { error: `Não foi possível criar o usuário${error?.message ? ` (${error.message})` : ''}.` };
+    }
     userId = data.user.id;
+    try {
+      await withSession(user, (tx) => tx`insert into perfis (user_id, loja_id, nome, papel, usuario) values (${userId}, ${user.lojaId}, ${nome}, ${papel}, ${usuario})`);
+    } catch (e) {
+      // Não deixa conta sem perfil no Supabase (ela prenderia esse usuário para sempre).
+      await admin.auth.admin.deleteUser(userId).catch(() => {});
+      const repetido = (e as { code?: string }).code === '23505';
+      return repetido ? { fieldErrors: { usuario: 'Esse usuário já existe.' } } : { error: 'Não foi possível criar o usuário.' };
+    }
+    revalidatePath('/configuracoes/usuarios');
+    return ok('Usuário criado');
   } else {
     const [u] = await serviceDb()`insert into auth.users (id, email) values (gen_random_uuid(), ${emailInterno(usuario)}) returning id`;
     userId = u.id;

@@ -46,7 +46,7 @@ function preguicoso(criar: () => postgres.Sql): postgres.Sql {
 /** Conexão usada pelas telas. Toda consulta passa por withSession (RLS). */
 export const db: postgres.Sql = preguicoso(() => (g.__btDb ??= connect(urlDoBanco(), 'DATABASE_URL')));
 
-/** Conexão de serviço (ignora RLS). Só worker, webhook e login em modo dev. */
+/** Conexão de serviço (ignora RLS): worker, webhook, login (usuário → conta) e criação de usuários. */
 export function serviceDb(): postgres.Sql {
   return (g.__btService ??= connect(urlDoBanco(process.env, true), 'SUPABASE_SERVICE_DATABASE_URL'));
 }

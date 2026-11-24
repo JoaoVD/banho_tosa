@@ -29,12 +29,13 @@ Custo aproximado: Supabase e Vercel no plano gratuito aguentam uma loja; a VPS c
    insert into lojas (nome, telefone_dona) values ('Nome da Loja', '+5511999999999') returning id;
    -- use o id devolvido acima:
    insert into configuracoes (loja_id, whatsapp_instancia) values ('ID_DA_LOJA', 'banho-e-tosa');
-   insert into perfis (user_id, loja_id, nome, papel)
-     select id, 'ID_DA_LOJA', 'Nome da dona', 'dona' from auth.users where email = 'dona@sualoja.com.br';
-   insert into perfis (user_id, loja_id, nome, papel)
-     select id, 'ID_DA_LOJA', 'Nome da recepcionista', 'recepcao' from auth.users where email = 'recepcao@sualoja.com.br';
+   insert into perfis (user_id, loja_id, nome, papel, usuario)
+     select id, 'ID_DA_LOJA', 'Nome da dona', 'dona', 'dona' from auth.users where email = 'dona@sualoja.com.br';
+   insert into perfis (user_id, loja_id, nome, papel, usuario)
+     select id, 'ID_DA_LOJA', 'Nome da recepcionista', 'recepcao', 'recepcao' from auth.users where email = 'recepcao@sualoja.com.br';
    ```
-   Depois disso, novos usuários podem ser convidados pela tela **Configurações › Usuários**.
+   O login é por **usuário** (a última coluna acima) e senha; o e-mail só existe por dentro.
+   Depois disso, a dona cria os outros usuários (com senha inicial) e redefine senhas em **Configurações › Usuários**.
 
 ## 2. Vercel (sistema)
 
@@ -46,9 +47,9 @@ Custo aproximado: Supabase e Vercel no plano gratuito aguentam uma loja; a VPS c
    | `AUTH_MODE` | `supabase` |
    | `NEXT_PUBLIC_SUPABASE_URL` | Supabase › Project Settings › API › Project URL |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase › API › `anon` key |
-   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase › API › `service_role` key (só para convites) |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase › API › `service_role` key (criar usuários e redefinir senhas) |
    | `DATABASE_URL` | Supabase › Database › Connection string › **Transaction pooler** |
-   | `SUPABASE_SERVICE_DATABASE_URL` | a mesma connection string |
+   | `SUPABASE_SERVICE_DATABASE_URL` | a mesma connection string (usada também no login, para achar a conta pelo usuário) |
    | `WHATSAPP_PROVIDER` | `evolution` |
    | `EVOLUTION_URL` | endereço público da Evolution (passo 3) |
    | `EVOLUTION_API_KEY` | a mesma chave do `.env.vps` |

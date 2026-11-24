@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { withClaims } from '@/db/session';
+import { emailInterno } from '@/domain/usuario';
 import { contaDoUsuario } from './usuario';
 import { ERRO_LOGIN, type AuthProvider, type SessionUser } from './provider';
 
@@ -30,8 +31,9 @@ export const supabaseAuth: AuthProvider = {
   },
   async signIn(usuario, password) {
     const conta = await contaDoUsuario(usuario);
+    // Usuário inexistente também passa pelo Supabase: o tempo de resposta não revela quem existe.
+    const { error } = await (await client()).auth.signInWithPassword({ email: conta?.email ?? emailInterno('nao.existe'), password });
     if (!conta) return { ok: false, error: ERRO_LOGIN };
-    const { error } = await (await client()).auth.signInWithPassword({ email: conta.email, password });
     return error ? { ok: false, error: ERRO_LOGIN } : { ok: true };
   },
   async signOut() {
