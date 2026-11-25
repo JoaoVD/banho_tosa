@@ -23,9 +23,9 @@ type Item = {
 export async function drainOnce({ sql, provider, clock, random, lojaId }: DrainDeps): Promise<{ enviadas: number; adiadas: number }> {
   const [cfg] = await sql`select envio_inicio, envio_fim, teto_diario, intervalo_min_s, intervalo_max_s from configuracoes where loja_id = ${lojaId}`;
   if (!cfg) return { enviadas: 0, adiadas: 0 };
-  // Loja de demonstração: os telefones são inventados, nada sai.
-  const [{ demo }] = await sql`select demo from lojas where id = ${lojaId}`;
-  if (demo) return { enviadas: 0, adiadas: 0 };
+  // Demonstração (telefones inventados) ou loja sem WhatsApp liberado (o número é de outra loja): nada sai.
+  const [loja] = await sql`select demo, whatsapp_liberado from lojas where id = ${lojaId}`;
+  if (!loja || loja.demo || !loja.whatsapp_liberado) return { enviadas: 0, adiadas: 0 };
   const inicio = String(cfg.envio_inicio).slice(0, 5), fim = String(cfg.envio_fim).slice(0, 5);
   const naJanela = () => { const h = hhmmSP(clock.now()); return h >= inicio && h < fim; };
   const pendentes = (prioridade: 'imediata' | 'lote') => sql<Item[]>`

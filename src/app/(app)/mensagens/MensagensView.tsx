@@ -22,7 +22,7 @@ const SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const nomeDe = (c: { tutorNome: string | null; telefone: string }) => c.tutorNome ?? formatPhoneBR(c.telefone);
 
 export function MensagensView(props: {
-  filtro: 'tutores' | 'outros'; conectado: boolean; conversas: Item[];
+  filtro: 'tutores' | 'outros'; conectado: boolean; liberado: boolean; conversas: Item[];
   lembretes: { dia: string; hora: string; itens: { tutorId: string; tutorNome: string; petNome: string }[] };
   hoje: string; pets: PetOpcao[]; servicos: ServicoOpcao[];
 }) {
@@ -57,10 +57,16 @@ export function MensagensView(props: {
   return (
     <div className="view">
       <PageHead
-        eyebrow={props.conectado ? 'WhatsApp conectado' : 'WhatsApp desconectado'}
+        eyebrow={!props.liberado ? 'WhatsApp indisponível' : props.conectado ? 'WhatsApp conectado' : 'WhatsApp desconectado'}
         title="Mensagens"
         actions={<Button variant="tinted" onClick={() => setVerLembretes(true)}><Icon name="bell" />{`Próximos lembretes (${props.lembretes.itens.length})`}</Button>}
       />
+      {!props.liberado && (
+        <div className="card pad" role="status">
+          <b>O WhatsApp ainda não está disponível para esta loja.</b>
+          <p className="muted" style={{ margin: '4px 0 0' }}>Lembretes e mensagens não são enviados por enquanto. O resto do sistema funciona normalmente.</p>
+        </div>
+      )}
       <div className={s.inbox} data-vendo={vendo}>
         <div className={s.left}>
           <Segmented label="Conversas" value={props.filtro} onChange={(f) => router.push(`${pathname}?filtro=${f}`)} options={[{ value: 'tutores', label: 'Tutores' }, { value: 'outros', label: 'Outros' }]} />

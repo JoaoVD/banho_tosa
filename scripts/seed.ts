@@ -103,8 +103,8 @@ async function conversas(loja: string) {
 export async function seed() {
   await sql`truncate lojas cascade`;
   await sql`delete from auth.users`;
-  const [{ id: loja }] = await sql`insert into lojas (nome, telefone_dona, onboarding_concluido)
-    values ('Banho e Tosa', '+5511987659999', true) returning id`;
+  const [{ id: loja }] = await sql`insert into lojas (nome, telefone_dona, onboarding_concluido, whatsapp_liberado)
+    values ('Banho e Tosa', '+5511987659999', true, true) returning id`;
   const dona = crypto.randomUUID();
   const rec = crypto.randomUUID();
   await sql`insert into auth.users (id, email) values (${dona}, 'dona@exemplo.dev'), (${rec}, 'recepcao@exemplo.dev')`;

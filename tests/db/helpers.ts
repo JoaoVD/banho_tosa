@@ -32,7 +32,7 @@ export interface LojaSeed {
 
 /** Cria uma loja com uma dona e uma recepcionista (via conexão de serviço). */
 export async function seedLoja(nome = 'Loja Teste'): Promise<LojaSeed> {
-  const [{ id: lojaId }] = await sql<{ id: string }[]>`insert into lojas (nome) values (${nome}) returning id`;
+  const [{ id: lojaId }] = await sql<{ id: string }[]>`insert into lojas (nome, whatsapp_liberado) values (${nome}, true) returning id`;
   const donaId = crypto.randomUUID();
   const recepcaoId = crypto.randomUUID();
   await sql`insert into auth.users (id, email) values (${donaId}, ${`dona-${donaId}@t.dev`}), (${recepcaoId}, ${`rec-${recepcaoId}@t.dev`})`;

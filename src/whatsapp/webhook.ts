@@ -46,10 +46,9 @@ export async function handleInbound(sql: postgres.Sql, lojaId: string, events: I
 
 /** Loja dona da instância do WhatsApp (v1: a única loja, ou a que tem essa instância configurada). */
 export async function lojaDaInstancia(sql: postgres.Sql, instancia?: string): Promise<string | null> {
-  if (instancia) {
-    const [l] = await sql`select loja_id from configuracoes where whatsapp_instancia = ${instancia}`;
-    if (l) return l.loja_id;
-  }
-  const [l] = await sql`select id from lojas order by criado_em limit 1`;
-  return l?.id ?? null;
+  // Só a loja ligada a essa instância (e liberada). Instância desconhecida: ninguém recebe.
+  if (!instancia) return null;
+  const [l] = await sql`select c.loja_id from configuracoes c join lojas l on l.id = c.loja_id
+    where c.whatsapp_instancia = ${instancia} and l.whatsapp_liberado`;
+  return l?.loja_id ?? null;
 }

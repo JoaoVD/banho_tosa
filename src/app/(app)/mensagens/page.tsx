@@ -17,12 +17,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ f
     lembretes: await listLembretesProximoEnvio(tx, agora()),
     pets: await searchPets(tx, ''),
     servicos: await listServicos(tx, true),
+    liberado: (await tx<{ ok: boolean }[]>`select whatsapp_liberado as ok from lojas where id = ${user.lojaId}`)[0]?.ok ?? false,
   }));
-  const conexao = await (await getProvider()).connection().catch(() => ({ state: 'close' as const }));
+  const conexao = data.liberado ? await (await getProvider()).connection().catch(() => ({ state: 'close' as const })) : { state: 'close' as const };
   return (
     <MensagensView
       filtro={filtro}
       conectado={conexao.state === 'open'}
+      liberado={data.liberado}
       conversas={data.conversas.map((c) => ({ ...c, ultimaEm: c.ultimaEm.toISOString() }))}
       lembretes={data.lembretes}
       hoje={dayKeySP(agora())}

@@ -24,8 +24,9 @@ export async function comoLoja<T>(sql: postgres.Sql, lojaId: string, fn: (tx: Tx
 /** Lembretes de retorno e de véspera do dia. Idempotente: cada tipo roda uma vez por loja e dia. */
 export async function runDaily({ sql, clock, lojaId }: DailyDeps, dia: string): Promise<{ lembretes: number; vesperas: number }> {
   const agora = clock.now();
-  const [loja] = await sql`select demo from lojas where id = ${lojaId}`;
-  if (!loja || loja.demo) return { lembretes: 0, vesperas: 0 };
+  // Demonstração (telefones inventados) ou loja ainda sem WhatsApp próprio: não gera lembretes.
+  const [loja] = await sql`select demo, whatsapp_liberado from lojas where id = ${lojaId}`;
+  if (!loja || loja.demo || !loja.whatsapp_liberado) return { lembretes: 0, vesperas: 0 };
   return comoLoja(sql, lojaId, async (tx) => {
     // A marca fica na mesma transação: se algo falhar, o dia não é dado como feito.
     const [ok] = await tx`insert into execucoes_diarias (loja_id, dia, tipo) values (${lojaId}, ${dia}, 'lembretes')
