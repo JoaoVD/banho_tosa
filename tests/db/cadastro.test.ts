@@ -51,3 +51,34 @@ test('instância desconhecida não cai em nenhuma loja', async () => {
   expect(await lojaDaInstancia(sql, 'outra-instancia')).toBeNull();
   expect(await lojaDaInstancia(sql, undefined)).toBeNull();
 });
+
+test('criarLoja cria loja, dona e configurações; nasce sem onboarding e sem WhatsApp', async () => {
+  const { criarLoja } = await import('@/db/repos/cadastro');
+  const userId = crypto.randomUUID();
+  await sql`insert into auth.users (id, email) values (${userId}, 'mari@x.com')`;
+  const lojaId = await criarLoja(sql, { nomeLoja: 'Pet Spa Bela Vista', nome: 'Mariana', usuario: 'mariana', userId });
+  const [l] = await sql`select nome, onboarding_concluido, whatsapp_liberado from lojas where id = ${lojaId}`;
+  expect(l).toEqual({ nome: 'Pet Spa Bela Vista', onboarding_concluido: false, whatsapp_liberado: false });
+  const [p] = await sql`select nome, papel, usuario from perfis where user_id = ${userId}`;
+  expect(p).toEqual({ nome: 'Mariana', papel: 'dona', usuario: 'mariana' });
+  expect(await sql`select 1 from configuracoes where loja_id = ${lojaId}`).toHaveLength(1);
+});
+
+test('criarLoja não deixa loja pela metade se o usuário já existe', async () => {
+  const { criarLoja } = await import('@/db/repos/cadastro');
+  const a = await seedLoja();
+  const [{ usuario }] = await sql`select usuario from perfis where user_id = ${a.donaId}`;
+  const userId = crypto.randomUUID();
+  await sql`insert into auth.users (id, email) values (${userId}, 'z@x.com')`;
+  await expect(criarLoja(sql, { nomeLoja: 'Outra', nome: 'Z', usuario, userId })).rejects.toMatchObject({ code: '23505' });
+  expect(await sql`select 1 from lojas where nome = 'Outra'`).toHaveLength(0);
+});
+
+test('cadastrosRecentes conta só a última hora do mesmo IP', async () => {
+  const { cadastrosRecentes, registrarCadastro } = await import('@/db/repos/cadastro');
+  const agora = new Date('2026-11-25T12:00:00Z');
+  await registrarCadastro(sql, '1.2.3.4', new Date('2026-11-25T10:30:00Z'));
+  await registrarCadastro(sql, '1.2.3.4', new Date('2026-11-25T11:30:00Z'));
+  await registrarCadastro(sql, '5.6.7.8', new Date('2026-11-25T11:40:00Z'));
+  expect(await cadastrosRecentes(sql, '1.2.3.4', agora)).toBe(1);
+});

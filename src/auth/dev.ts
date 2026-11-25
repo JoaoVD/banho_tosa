@@ -30,6 +30,11 @@ async function perfil(userId: string): Promise<SessionUser | null> {
   return p ?? null;
 }
 
+/** Modo dev: entra direto como o usuário recém-cadastrado (no dev a senha de login é sempre "dev"). */
+export async function devEntrarComo(userId: string): Promise<void> {
+  (await cookies()).set(DEV_COOKIE, sign(userId), { httpOnly: true, sameSite: 'lax', path: '/' });
+}
+
 /** Login de desenvolvimento: usuários do seed, senha "dev". Bloqueado em produção. */
 export const devAuth: AuthProvider = {
   async currentUser() {

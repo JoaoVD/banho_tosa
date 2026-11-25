@@ -13,3 +13,8 @@
 .button:hover{background:#00625A}
 .button:focus-visible{outline:3px solid rgba(0,135,124,.55);outline-offset:2px}
 .button:disabled{opacity:.7}
+.fieldError{font-size:13px;color:#C9241B;margin-left:4px}
+.field input[aria-invalid="true"]{box-shadow:0 0 0 2px #C9241B}
+.hp{position:absolute;left:-10000px;width:1px;height:1px;opacity:0}
+.alt{margin:4px 0 0;text-align:center;font-size:15px;color:#636366}
+.alt a{color:#00766C;font-weight:600;text-decoration:none}

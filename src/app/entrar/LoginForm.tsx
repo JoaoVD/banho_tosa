@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useActionState } from 'react';
 import { entrarAction, type EntrarState } from './actions';
 import s from './entrar.module.css';
@@ -23,6 +24,7 @@ export function LoginForm() {
       <button className={s.button} disabled={pending} aria-busy={pending}>
         {pending ? 'Entrando…' : 'Entrar'}
       </button>
+      <p className={s.alt}>Novo por aqui? <Link href="/cadastro">Criar conta</Link></p>
     </form>
   );
 }

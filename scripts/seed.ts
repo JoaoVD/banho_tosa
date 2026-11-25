@@ -1,22 +1,14 @@
 /* Dados de exemplo (os do protótipo). Apaga tudo antes. Só para desenvolvimento. */
 import postgres from 'postgres';
-import { PORTES, type Porte } from '../src/domain/types';
+import { PORTES } from '../src/domain/types';
 import { atSP, dayKeySP } from '../src/domain/time';
+import { CATALOGO } from '../src/domain/catalogo';
 
 const url = process.env.DATABASE_URL ?? 'postgres://postgres@localhost:54329/postgres';
 if (process.env.NODE_ENV === 'production') throw new Error('seed não roda em produção');
 const sql = postgres(url, { onnotice: () => {} });
 
-type Tabela = Partial<Record<Porte, [number, number]>>;
-const SERVICOS: { nome: string; banho: boolean; tosa: boolean; ciclo: number; precos: Tabela }[] = [
-  { nome: 'Banho', banho: true, tosa: false, ciclo: 15, precos: { mini: [5000, 45], pequeno: [7000, 60], medio: [8500, 75], grande: [11000, 90], gigante: [14000, 120] } },
-  { nome: 'Banho + tosa higiênica', banho: true, tosa: true, ciclo: 15, precos: { mini: [7000, 75], pequeno: [8500, 90], medio: [10000, 105], grande: [13000, 120], gigante: [16000, 150] } },
-  { nome: 'Banho + hidratação', banho: true, tosa: false, ciclo: 15, precos: { mini: [9000, 60], pequeno: [11000, 75], medio: [12500, 90], grande: [15000, 105], gigante: [18000, 135] } },
-  { nome: 'Banho + escovação', banho: true, tosa: false, ciclo: 15, precos: { mini: [7000, 60], pequeno: [9000, 75], medio: [11000, 90], grande: [13000, 105], gigante: [16000, 135] } },
-  { nome: 'Banho + tosa bebê', banho: true, tosa: true, ciclo: 21, precos: { mini: [8000, 90], pequeno: [9500, 105], medio: [11500, 120], grande: [14500, 150], gigante: [17500, 180] } },
-  { nome: 'Tosa na tesoura', banho: false, tosa: true, ciclo: 30, precos: { mini: [10000, 75], pequeno: [12000, 90], medio: [14000, 105], grande: [17000, 120], gigante: [20000, 150] } },
-  { nome: 'Tosa da raça', banho: false, tosa: true, ciclo: 30, precos: { mini: [10000, 75], pequeno: [12000, 90], medio: [14000, 105], grande: [17000, 120], gigante: [20000, 150] } },
-];
+const SERVICOS = CATALOGO;
 
 const PETS = [
   { tutor: 'Ana Souza', tel: '+5511987650000', pet: 'Thor', raca: 'Shih-tzu', porte: 'pequeno', cuidados: ['Sensível nas orelhas', 'Secador no morno', 'Gosta de petisco de frango'] },
@@ -102,6 +94,7 @@ async function conversas(loja: string) {
 
 export async function seed() {
   await sql`truncate lojas cascade`;
+  await sql`truncate cadastros_tentativas`;
   await sql`delete from auth.users`;
   const [{ id: loja }] = await sql`insert into lojas (nome, telefone_dona, onboarding_concluido, whatsapp_liberado)
     values ('Banho e Tosa', '+5511987659999', true, true) returning id`;
