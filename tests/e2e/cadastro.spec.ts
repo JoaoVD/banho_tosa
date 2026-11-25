@@ -27,7 +27,7 @@ test('cria a conta e já entra no primeiro acesso', async ({ page }) => {
   await preencher(page);
   await page.getByRole('button', { name: 'Criar conta' }).click();
   await expect(page).toHaveURL(/\/boas-vindas$/);
-  await expect(page.getByText(/Mariana/).first()).toBeVisible();
+  await expect(page.getByText(/Oi, Mariana!/)).toBeVisible();
 });
 
 test('usuário repetido', async ({ page }) => {
