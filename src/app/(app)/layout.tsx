@@ -14,11 +14,12 @@ export const dynamic = 'force-dynamic';
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser();
   const [loja] = await withSession(user, (tx) => tx<{ nome: string; onboarding: boolean; tutores: number; whatsapp: boolean }[]>`
-    select nome, onboarding_concluido as onboarding, whatsapp_liberado as whatsapp,
+    select nome, onboarding_concluido as onboarding, (whatsapp_liberado or demo) as whatsapp,
       (select count(*)::int from tutores where loja_id = ${user.lojaId}) as tutores
     from lojas where id = ${user.lojaId}`);
   const naoLidas = await withSession(user, totalNaoLidas);
   // Loja sem WhatsApp liberado (o número do servidor é de outra loja): sempre desconectado.
+  // A demonstração continua mostrando o estado (nada sai dela: o robô a ignora).
   const whatsappOk = Boolean(loja?.whatsapp) && (await (await getProvider()).connection().catch(() => ({ state: 'close' }))).state === 'open';
   // Primeiro acesso da dona: escolher entre importar planilha e começar do zero.
   if (user.papel === 'dona' && loja && !loja.onboarding && loja.tutores === 0) redirect('/boas-vindas');

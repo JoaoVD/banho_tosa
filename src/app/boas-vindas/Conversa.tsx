@@ -26,6 +26,7 @@ export function Conversa(props: { nome: string; loja: string; horarios: Horario[
   const [horarios, setHorarios] = useState(props.horarios);
   const [equipe, setEquipe] = useState(props.equipe);
   const [servicos, setServicos] = useState(props.servicos);
+  const [precos, setPrecos] = useState(props.precos);
   const [atual, setAtual] = useState<Atual>(() => etapaInicial({ horarios: props.horarios.length, equipe: props.equipe.length, servicos: props.servicos }));
   const fim = useRef<HTMLDivElement>(null);
   useEffect(() => { fim.current?.scrollIntoView({ block: 'end', behavior: 'smooth' }); }, [atual]);
@@ -55,7 +56,7 @@ export function Conversa(props: { nome: string; loja: string; horarios: Horario[
               <div className={s.controles}>
                 {e === 'horarios' && <PassoHorarios onSalvo={(h) => { setHorarios(h); proxima({ horarios: h.length }); }} />}
                 {e === 'equipe' && <PassoEquipe equipe={equipe} setEquipe={setEquipe} onContinuar={() => proxima({ equipe: equipe.length })} />}
-                {e === 'servicos' && <PassoServicos precos={props.precos} onSalvo={(n) => { setServicos(n); proxima({ servicos: n }); }} />}
+                {e === 'servicos' && <PassoServicos precos={precos} onSalvo={(n, p) => { setServicos(n); setPrecos(p); proxima({ servicos: n }); }} />}
                 {e === 'clientes' && <PassoClientes onPronto={() => setAtual('pronto')} />}
               </div>
             ) : (
@@ -155,6 +156,7 @@ function PassoEquipe({ equipe, setEquipe, onContinuar }: { equipe: Pessoa[]; set
     // Limpa o campo na hora: dá para digitar o próximo nome enquanto este é salvo.
     const n = nome.trim();
     const f = funcao;
+    if (!n) { if (!pending) setErro('Informe o nome.'); return; }
     setNome('');
     start(async () => {
       const r = await adicionarProfissionalAction(n, f);
@@ -189,7 +191,7 @@ function PassoEquipe({ equipe, setEquipe, onContinuar }: { equipe: Pessoa[]; set
   );
 }
 
-function PassoServicos({ precos, onSalvo }: { precos: PrecosPorNome; onSalvo: (n: number) => void }) {
+function PassoServicos({ precos, onSalvo }: { precos: PrecosPorNome; onSalvo: (n: number, precos: PrecosPorNome) => void }) {
   const [ajustando, setAjustando] = useState(false);
   const [valores, setValores] = useState(() => Object.fromEntries(Object.entries(precos).map(([n, p]) => [n, Object.fromEntries(PORTES.map((x) => [x, reais(p[x])]))])) as Record<string, Record<Porte, string>>);
   const [erro, setErro] = useState('');
@@ -202,7 +204,8 @@ function PassoServicos({ precos, onSalvo }: { precos: PrecosPorNome; onSalvo: (n
       ajuste = Object.fromEntries(lidos) as PrecosPorNome;
     }
     const r = await salvarServicosAction(ajuste);
-    onSalvo(r.total);
+    if (!r.ok) return setErro(r.erro);
+    onSalvo(r.total, r.precos);
   });
   if (!ajustando) {
     return (

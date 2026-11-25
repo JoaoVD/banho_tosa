@@ -10,7 +10,7 @@
 .linhaBot { display: flex; align-items: flex-end; gap: 8px; animation: entra .45s var(--spring) both; }
 .linhaEu { display: flex; justify-content: flex-end; animation: entra .35s var(--spring) both; }
 .avatar { width: 28px; height: 28px; flex: 0 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(160deg, #5FE3C9, #00877C); }
-.balao { margin: 0; max-width: min(460px, 82%); padding: 10px 14px; border-radius: 20px; font-size: 16px; line-height: 1.38; }
+.balao { margin: 0; overflow-wrap: anywhere; max-width: min(460px, 82%); padding: 10px 14px; border-radius: 20px; font-size: 16px; line-height: 1.38; }
 .bot { background: var(--surface); box-shadow: var(--shadow); border-bottom-left-radius: 6px; }
 .eu { background: var(--tint); color: var(--on-tint); border-bottom-right-radius: 6px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .alterar { border: 0; background: rgba(255,255,255,.22); color: inherit; font-weight: 600; font-size: 13px; border-radius: 999px; padding: 4px 10px; min-height: 28px; }

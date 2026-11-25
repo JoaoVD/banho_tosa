@@ -1,5 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
+import { execSync } from 'node:child_process';
 import { resetarDados } from './helpers';
+
+const DB = process.env.DATABASE_URL ?? 'postgres://postgres@localhost:54329/postgres';
 
 async function cadastrar(page: Page) {
   await page.goto('/cadastro');
@@ -84,4 +87,27 @@ test('importar planilha leva à importação', async ({ page }) => {
   await page.getByRole('button', { name: 'Está ótimo' }).click();
   await page.getByRole('button', { name: 'Importar planilha' }).click();
   await expect(page).toHaveURL(/\/configuracoes\/importar$/);
+});
+
+test('preço ajustado continua certo ao alterar serviços de novo', async ({ page }) => {
+  await cadastrar(page);
+  await page.getByRole('button', { name: 'Seg a Sáb 8h–18h' }).click();
+  await page.getByLabel('Nome de quem trabalha').fill('Júlia');
+  await page.getByRole('button', { name: 'Adicionar' }).click();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await page.getByRole('button', { name: 'Ajustar preços' }).click();
+  await page.getByLabel('Banho, Pequeno').fill('75,00');
+  await page.getByRole('button', { name: 'Salvar preços' }).click();
+  await page.getByRole('button', { name: 'Alterar serviços' }).click();
+  await page.getByRole('button', { name: 'Ajustar preços' }).click();
+  await expect(page.getByLabel('Banho, Pequeno')).toHaveValue('75,00');
+});
+
+test('loja nova não vê nem conecta o WhatsApp do servidor', async ({ page }) => {
+  await cadastrar(page);
+  execSync(`psql "${DB}" -q -c "update lojas set onboarding_concluido = true where nome = 'Pet Spa Bela Vista'"`);
+  await page.goto('/configuracoes/whatsapp');
+  await expect(page.getByText('O WhatsApp ainda não está disponível para esta loja.')).toBeVisible();
+  await expect(page.getByRole('img', { name: /QR/i })).toHaveCount(0);
+  await expect(page.getByText(/Conectado/)).toHaveCount(0);
 });

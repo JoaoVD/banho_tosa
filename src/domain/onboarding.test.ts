@@ -20,3 +20,20 @@ test('a conversa começa na primeira etapa que falta', () => {
   expect(etapaInicial({ horarios: 6, equipe: 2, servicos: 0 })).toBe('servicos');
   expect(etapaInicial({ horarios: 6, equipe: 2, servicos: 7 })).toBe('clientes');
 });
+
+test('preços do primeiro acesso: inteiros de 0 a R$ 10.000', async () => {
+  const { validarPrecos } = await import('./onboarding');
+  const p = { mini: 5000, pequeno: 7000, medio: 8500, grande: 11000, gigante: 14000 };
+  expect(validarPrecos({ Banho: p })).toEqual({ Banho: p });
+  expect(validarPrecos({ Banho: { ...p, mini: 9_999_999_900 } })).toBeNull();
+  expect(validarPrecos({ Banho: { ...p, mini: -1 } })).toBeNull();
+  expect(validarPrecos({ Banho: { ...p, mini: Number.NaN } })).toBeNull();
+  expect(validarPrecos({ Banho: { ...p, mini: 10.5 } })).toBeNull();
+});
+
+test('horários repetidos no mesmo dia ficam um só', async () => {
+  const { normalizarHorarios } = await import('./onboarding');
+  expect(normalizarHorarios([{ diaSemana: 1, abre: '08:00', fecha: '18:00' }, { diaSemana: 1, abre: '09:00', fecha: '17:00' }])).toEqual({ ok: true, dias: [{ diaSemana: 1, abre: '08:00', fecha: '18:00' }] });
+  expect(normalizarHorarios([{ diaSemana: 9, abre: '08:00', fecha: '18:00' }])).toEqual({ ok: false, erro: 'Escolha pelo menos um dia.' });
+  expect(normalizarHorarios([{ diaSemana: 1, abre: '18:00', fecha: '08:00' }])).toEqual({ ok: false, erro: 'O horário de fechar precisa ser depois do de abrir.' });
+});

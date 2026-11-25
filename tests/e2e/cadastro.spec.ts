@@ -58,7 +58,7 @@ test('robô que preenche o campo escondido é recusado', async ({ page }) => {
 });
 
 test('limite de cadastros por hora', async ({ page }) => {
-  const ips = ['::1', '127.0.0.1', '::ffff:127.0.0.1', 'desconhecido'];
+  const ips = ['0:0:0:0::/64', '127.0.0.1', 'desconhecido'];
   const valores = ips.flatMap((ip) => Array.from({ length: 5 }, () => `('${ip}', now())`)).join(',');
   execSync(`psql "${DB}" -q -c "insert into cadastros_tentativas (ip, em) values ${valores}"`);
   await preencher(page);

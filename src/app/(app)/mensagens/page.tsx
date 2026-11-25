@@ -17,7 +17,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ f
     lembretes: await listLembretesProximoEnvio(tx, agora()),
     pets: await searchPets(tx, ''),
     servicos: await listServicos(tx, true),
-    liberado: (await tx<{ ok: boolean }[]>`select whatsapp_liberado as ok from lojas where id = ${user.lojaId}`)[0]?.ok ?? false,
+    liberado: (await tx<{ ok: boolean }[]>`select (whatsapp_liberado or demo) as ok from lojas where id = ${user.lojaId}`)[0]?.ok ?? false,
   }));
   const conexao = data.liberado ? await (await getProvider()).connection().catch(() => ({ state: 'close' as const })) : { state: 'close' as const };
   return (

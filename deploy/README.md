@@ -29,6 +29,8 @@ Custo aproximado: Supabase e Vercel no plano gratuito aguentam uma loja; a VPS c
    insert into lojas (nome, telefone_dona) values ('Nome da Loja', '+5511999999999') returning id;
    -- use o id devolvido acima:
    insert into configuracoes (loja_id, whatsapp_instancia) values ('ID_DA_LOJA', 'banho-e-tosa');
+   -- só esta loja usa o WhatsApp do servidor (lojas criadas pelo cadastro aberto nascem sem):
+   update lojas set whatsapp_liberado = true where id = 'ID_DA_LOJA';
    insert into perfis (user_id, loja_id, nome, papel, usuario)
      select id, 'ID_DA_LOJA', 'Nome da dona', 'dona', 'dona' from auth.users where email = 'dona@sualoja.com.br';
    insert into perfis (user_id, loja_id, nome, papel, usuario)

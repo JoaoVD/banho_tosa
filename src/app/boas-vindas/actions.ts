@@ -3,18 +3,18 @@ import { redirect } from 'next/navigation';
 import { requireDona } from '@/auth/current';
 import { withSession } from '@/db/session';
 import { setHorarios, updateLoja, upsertProfissional, type Horario } from '@/db/repos/config';
-import { aplicarCatalogo, type PrecosPorNome } from '@/db/repos/onboarding';
+import { aplicarCatalogo, precosParaAjuste, type PrecosPorNome } from '@/db/repos/onboarding';
+import { normalizarHorarios, validarPrecos } from '@/domain/onboarding';
 
-const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 type Resultado = { ok: true } | { ok: false; erro: string };
 
 export async function salvarHorariosAction(dias: Horario[]): Promise<Resultado> {
   const user = await requireDona();
-  const validos = dias.filter((d) => Number.isInteger(d.diaSemana) && d.diaSemana >= 0 && d.diaSemana <= 6);
-  if (!validos.length) return { ok: false, erro: 'Escolha pelo menos um dia.' };
-  if (validos.some((d) => !HHMM.test(d.abre) || !HHMM.test(d.fecha))) return { ok: false, erro: 'Horário inválido.' };
-  if (validos.some((d) => d.fecha <= d.abre)) return { ok: false, erro: 'O horário de fechar precisa ser depois do de abrir.' };
-  await withSession(user, (tx) => setHorarios(tx, user.lojaId, validos));
+  const r = normalizarHorarios(dias);
+  if (!r.ok) return { ok: false, erro: r.erro };
+  await withSession(user, (tx) => setHorarios(tx, user.lojaId, r.dias));
   return { ok: true };
 }
 
@@ -28,13 +28,16 @@ export async function adicionarProfissionalAction(nome: string, funcao: 'banho' 
 
 export async function removerProfissionalAction(id: string): Promise<void> {
   const user = await requireDona();
+  if (!UUID.test(id)) return;
   await withSession(user, (tx) => tx`update profissionais set ativo = false where id = ${id} and loja_id = ${user.lojaId}`);
 }
 
-export async function salvarServicosAction(precos: PrecosPorNome = {}): Promise<{ ok: true; total: number }> {
+export async function salvarServicosAction(precos: PrecosPorNome = {}): Promise<{ ok: true; total: number; precos: PrecosPorNome } | { ok: false; erro: string }> {
   const user = await requireDona();
-  const total = await withSession(user, (tx) => aplicarCatalogo(tx, user.lojaId, precos));
-  return { ok: true, total };
+  const validos = validarPrecos(precos);
+  if (!validos) return { ok: false, erro: 'Confira os preços: até R$ 10.000,00 por porte.' };
+  const r = await withSession(user, async (tx) => ({ total: await aplicarCatalogo(tx, user.lojaId, validos), precos: await precosParaAjuste(tx) }));
+  return { ok: true, ...r };
 }
 
 /** Fim do primeiro acesso. "importar" já leva para a importação da planilha. */

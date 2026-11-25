@@ -4,17 +4,19 @@ import { redirect } from 'next/navigation';
 import { authProvider } from '@/auth/current';
 import { devEntrarComo } from '@/auth/dev';
 import { serviceDb } from '@/db/client';
-import { cadastrosRecentes, criarLoja, registrarCadastro } from '@/db/repos/cadastro';
-import { ERRO_USUARIO, SENHA_MIN, USUARIO_RE, normalizarUsuario } from '@/domain/usuario';
+import { cadastrosRecentes, criarLoja, registrarCadastro, removerRegistro } from '@/db/repos/cadastro';
+import { faixaDoIp, validarCadastro } from '@/domain/cadastro';
+import { normalizarUsuario } from '@/domain/usuario';
 
 export type CadastroState = { error?: string; fieldErrors?: Record<string, string> };
 
-const LIMITE_POR_HORA = 5;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CADASTROS_POR_HORA = 5;
+/** Tentativas (inclusive com usuário ou e-mail já usados): segura quem tenta descobrir usuários. */
+const TENTATIVAS_POR_HORA = 20;
 
 async function ipDaRequisicao(): Promise<string> {
   const h = await headers();
-  return h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'desconhecido';
+  return faixaDoIp(h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'desconhecido');
 }
 
 async function supabaseAdmin() {
@@ -31,30 +33,40 @@ export async function cadastrarAction(_: CadastroState, f: FormData): Promise<Ca
   const usuario = normalizarUsuario(String(f.get('usuario') ?? ''));
   const email = String(f.get('email') ?? '').trim().toLowerCase();
   const senha = String(f.get('senha') ?? '');
-  const fieldErrors: Record<string, string> = {};
-  if (!nomeLoja) fieldErrors.loja = 'Informe o nome do pet shop.';
-  if (!nome) fieldErrors.nome = 'Informe o seu nome.';
-  if (!USUARIO_RE.test(usuario)) fieldErrors.usuario = ERRO_USUARIO;
-  if (!EMAIL_RE.test(email)) fieldErrors.email = 'E-mail inválido.';
-  if (senha.length < SENHA_MIN) fieldErrors.senha = `Mínimo de ${SENHA_MIN} caracteres.`;
+  const fieldErrors = validarCadastro({ loja: nomeLoja, nome, usuario, email, senha });
   if (Object.keys(fieldErrors).length) return { fieldErrors };
+  const supabase = process.env.AUTH_MODE === 'supabase';
+  // Sem Supabase em produção, o login de desenvolvimento não funcionaria: não cria nada.
+  if (!supabase && process.env.NODE_ENV === 'production') return { error: 'Cadastro indisponível no momento.' };
 
   const sql = serviceDb();
   const ip = await ipDaRequisicao();
-  if ((await cadastrosRecentes(sql, ip)) >= LIMITE_POR_HORA) return { error: 'Muitos cadastros feitos daqui agora. Tente de novo mais tarde.' };
+  await registrarCadastro(sql, ip, new Date(), 'tentativa');
+  if ((await cadastrosRecentes(sql, ip, new Date(), 'tentativa')) > TENTATIVAS_POR_HORA
+    || (await cadastrosRecentes(sql, ip)) >= CADASTROS_POR_HORA) {
+    return { error: 'Muitos cadastros feitos daqui agora. Tente de novo mais tarde.' };
+  }
   const [usuarioExiste] = await sql`select 1 from perfis where lower(usuario) = ${usuario}`;
   if (usuarioExiste) return { fieldErrors: { usuario: 'Esse usuário já existe.' } };
   const [emailExiste] = await sql`select 1 from auth.users where lower(email) = ${email}`;
   if (emailExiste) return { fieldErrors: { email: 'Esse e-mail já tem conta.' } };
+  // Reserva a vaga antes de criar e confere de novo: vários envios ao mesmo tempo não passam do limite.
+  const reserva = await registrarCadastro(sql, ip);
+  if ((await cadastrosRecentes(sql, ip)) > CADASTROS_POR_HORA) {
+    await removerRegistro(sql, reserva);
+    return { error: 'Muitos cadastros feitos daqui agora. Tente de novo mais tarde.' };
+  }
 
-  const supabase = process.env.AUTH_MODE === 'supabase';
   const admin = supabase ? await supabaseAdmin() : null;
   let userId: string;
   if (admin) {
     const { data, error } = await admin.auth.admin.createUser({ email, password: senha, email_confirm: true });
     if (error || !data.user) {
+      await removerRegistro(sql, reserva);
       console.error('cadastro: Supabase recusou a conta', error?.message);
-      return { error: `Não foi possível criar a conta${error?.message ? ` (${error.message})` : ''}.` };
+      if (/already|registered|exists/i.test(error?.message ?? '')) return { fieldErrors: { email: 'Esse e-mail já tem conta.' } };
+      if (/password/i.test(error?.message ?? '')) return { fieldErrors: { senha: 'Senha fraca demais. Misture letras e números.' } };
+      return { error: 'Não foi possível criar a conta. Tente de novo.' };
     }
     userId = data.user.id;
   } else {
@@ -67,10 +79,10 @@ export async function cadastrarAction(_: CadastroState, f: FormData): Promise<Ca
     // Sem conta solta no Supabase (prenderia o usuário e o e-mail para sempre).
     if (admin) await admin.auth.admin.deleteUser(userId).catch(() => {});
     else await sql`delete from auth.users where id = ${userId}`;
+    await removerRegistro(sql, reserva);
     if ((e as { code?: string }).code === '23505') return { fieldErrors: { usuario: 'Esse usuário já existe.' } };
     return { error: 'Não foi possível criar a conta.' };
   }
-  await registrarCadastro(sql, ip);
   if (supabase) {
     const r = await (await authProvider()).signIn(usuario, senha);
     if (!r.ok) redirect('/entrar');

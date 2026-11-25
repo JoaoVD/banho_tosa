@@ -82,3 +82,32 @@ test('cadastrosRecentes conta só a última hora do mesmo IP', async () => {
   await registrarCadastro(sql, '5.6.7.8', new Date('2026-11-25T11:40:00Z'));
   expect(await cadastrosRecentes(sql, '1.2.3.4', agora)).toBe(1);
 });
+
+test('a dona não consegue liberar o WhatsApp nem trocar a instância pelo banco', async () => {
+  const { asUser } = await import('./helpers');
+  const a = await seedLoja();
+  await sql`update lojas set whatsapp_liberado = false where id = ${a.lojaId}`;
+  await expect(asUser(a.donaId, (tx) => tx`update lojas set whatsapp_liberado = true where id = ${a.lojaId}`)).rejects.toMatchObject({ code: '42501' });
+  await expect(asUser(a.donaId, (tx) => tx`update lojas set demo = true where id = ${a.lojaId}`)).rejects.toMatchObject({ code: '42501' });
+  await expect(asUser(a.donaId, (tx) => tx`update configuracoes set whatsapp_instancia = 'banho-e-tosa' where loja_id = ${a.lojaId}`)).rejects.toMatchObject({ code: '42501' });
+  // O que a tela da loja altera continua permitido.
+  await asUser(a.donaId, (tx) => tx`update lojas set nome = 'Novo nome' where id = ${a.lojaId}`);
+  await asUser(a.donaId, (tx) => tx`update configuracoes set teto_diario = 100 where loja_id = ${a.lojaId}`);
+});
+
+test('a mesma instância de WhatsApp não pode ser de duas lojas', async () => {
+  const a = await seedLoja('A');
+  const b = await seedLoja('B');
+  await sql`update configuracoes set whatsapp_instancia = 'x' where loja_id = ${a.lojaId}`;
+  await expect(sql`update configuracoes set whatsapp_instancia = 'x' where loja_id = ${b.lojaId}`).rejects.toMatchObject({ code: '23505' });
+});
+
+test('tentativas e cadastros contam separados', async () => {
+  const { cadastrosRecentes, registrarCadastro } = await import('@/db/repos/cadastro');
+  const agora = new Date('2026-11-25T12:00:00Z');
+  await registrarCadastro(sql, '9.9.9.9', new Date('2026-11-25T11:30:00Z'), 'tentativa');
+  await registrarCadastro(sql, '9.9.9.9', new Date('2026-11-25T11:31:00Z'), 'tentativa');
+  await registrarCadastro(sql, '9.9.9.9', new Date('2026-11-25T11:32:00Z'));
+  expect(await cadastrosRecentes(sql, '9.9.9.9', agora, 'tentativa')).toBe(2);
+  expect(await cadastrosRecentes(sql, '9.9.9.9', agora)).toBe(1);
+});

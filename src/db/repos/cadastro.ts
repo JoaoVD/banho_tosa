@@ -13,13 +13,20 @@ export async function criarLoja(sql: postgres.Sql, d: { nomeLoja: string; nome: 
   })) as string;
 }
 
-/** Cadastros concluídos a partir deste IP na última hora. */
-export async function cadastrosRecentes(sql: postgres.Sql, ip: string, agora = new Date()): Promise<number> {
+export type TipoRegistro = 'cadastro' | 'tentativa';
+
+/** Registros deste IP (ou faixa) na última hora: cadastros concluídos ou tentativas. */
+export async function cadastrosRecentes(sql: postgres.Sql, ip: string, agora = new Date(), tipo: TipoRegistro = 'cadastro'): Promise<number> {
   const [{ n }] = await sql<{ n: number }[]>`select count(*)::int as n from cadastros_tentativas
-    where ip = ${ip} and em > ${new Date(agora.getTime() - 3_600_000)} and em <= ${agora}`;
+    where ip = ${ip} and tipo = ${tipo} and em > ${new Date(agora.getTime() - 3_600_000)} and em <= ${agora}`;
   return n;
 }
 
-export async function registrarCadastro(sql: postgres.Sql, ip: string, em = new Date()): Promise<void> {
-  await sql`insert into cadastros_tentativas (ip, em) values (${ip}, ${em})`;
+export async function registrarCadastro(sql: postgres.Sql, ip: string, em = new Date(), tipo: TipoRegistro = 'cadastro'): Promise<number> {
+  const [{ id }] = await sql<{ id: number }[]>`insert into cadastros_tentativas (ip, em, tipo) values (${ip}, ${em}, ${tipo}) returning id`;
+  return id;
+}
+
+export async function removerRegistro(sql: postgres.Sql, id: number): Promise<void> {
+  await sql`delete from cadastros_tentativas where id = ${id}`;
 }

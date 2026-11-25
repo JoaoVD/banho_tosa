@@ -36,3 +36,39 @@ export function etapaInicial(p: { horarios: number; equipe: number; servicos: nu
   if (!p.servicos) return 'servicos';
   return 'clientes';
 }
+
+const PORTES_ORDEM = ['mini', 'pequeno', 'medio', 'grande', 'gigante'] as const;
+const PRECO_MAX = 1_000_000; // R$ 10.000,00
+
+/** Preços por serviço vindos do navegador: inteiros em centavos de 0 a R$ 10.000; senão null. */
+export function validarPrecos(precos: unknown): Record<string, Record<(typeof PORTES_ORDEM)[number], number>> | null {
+  if (!precos || typeof precos !== 'object') return null;
+  const saida: Record<string, Record<(typeof PORTES_ORDEM)[number], number>> = {};
+  for (const [nome, p] of Object.entries(precos as Record<string, unknown>)) {
+    if (!p || typeof p !== 'object') return null;
+    const linha = {} as Record<(typeof PORTES_ORDEM)[number], number>;
+    for (const porte of PORTES_ORDEM) {
+      const v = (p as Record<string, unknown>)[porte];
+      if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > PRECO_MAX) return null;
+      linha[porte] = v;
+    }
+    saida[nome] = linha;
+  }
+  return saida;
+}
+
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Horários vindos do navegador: um por dia (o primeiro vale), dias 0–6, abre antes de fechar. */
+export function normalizarHorarios(dias: Dia[]): { ok: true; dias: Dia[] } | { ok: false; erro: string } {
+  const vistos = new Set<number>();
+  const validos = (Array.isArray(dias) ? dias : []).filter((d) => {
+    if (!Number.isInteger(d?.diaSemana) || d.diaSemana < 0 || d.diaSemana > 6 || vistos.has(d.diaSemana)) return false;
+    vistos.add(d.diaSemana);
+    return true;
+  });
+  if (!validos.length) return { ok: false, erro: 'Escolha pelo menos um dia.' };
+  if (validos.some((d) => !HHMM.test(d.abre) || !HHMM.test(d.fecha))) return { ok: false, erro: 'Horário inválido.' };
+  if (validos.some((d) => d.fecha <= d.abre)) return { ok: false, erro: 'O horário de fechar precisa ser depois do de abrir.' };
+  return { ok: true, dias: validos.map((d) => ({ diaSemana: d.diaSemana, abre: d.abre, fecha: d.fecha })) };
+}
